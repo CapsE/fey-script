@@ -16,6 +16,9 @@ import {ErrorBoundary} from '../ErrorBoundary.jsx';
 import remarkLinkTarget from '../remark-plugins/link.jsx';
 import {Shareable} from '../Shareable.jsx';
 import yaml from 'yaml';
+import {Context} from "../Context.js";
+import {useEffect, useMemo, useState} from "react";
+import {FocusManager} from "../FocusManager.js";
 
 /**
  * Evaluate the given code with the given context
@@ -37,6 +40,13 @@ export function safeEval(code, context) {
 }
 
 export const Viewer = observer(({className, content, data, onChange, onClick}) => {
+    const eventTarget = useMemo(() => new FocusManager(), []);
+
+    useEffect(() => {
+        if(eventTarget.focusedElement) {
+            document.getElementById(eventTarget.focusedElement).focus();
+        }
+    });
 
     const regex = /^---\n([\s\S]*?)\n---/g;
     const match = regex.exec(content);
@@ -76,6 +86,25 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
         remarkLinkTarget,
     ];
 
+    const renderedCode = useMemo(() => {
+        return  <ReactMarkdown
+            remarkPlugins={plugins}
+            components={{
+                'row': Row,
+                'cols': Cols,
+                'image': Image,
+                'flex': Grid,
+                'grid': Grid,
+                'grid2': Grid,
+                'grid3': Grid3,
+                'grid4': Grid4,
+                'box': Box,
+                'inventory': Inventory,
+                'shareable': SourceExtract,
+            }}
+        >{content}</ReactMarkdown>
+    }, [content]);
+
     return <ErrorBoundary
             key={Date.now()}
             FallbackComponent={() => <div className="center">Invalid Stats</div>}
@@ -83,24 +112,15 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
                 console.log(e);
             }}
         >
-        <div className={className} onClick={onClick}>
-            <ReactMarkdown
-                remarkPlugins={plugins}
-                components={{
-                    'row': Row,
-                    'cols': Cols,
-                    'image': Image,
-                    'flex': Grid,
-                    'grid': Grid,
-                    'grid2': Grid,
-                    'grid3': Grid3,
-                    'grid4': Grid4,
-                    'box': Box,
-                    'inventory': Inventory,
-                    'shareable': SourceExtract,
-                }}
-            >{content}</ReactMarkdown>
-        </div>
+        <Context.Provider value={{
+            data,
+            onChange,
+            eventTarget
+        }}>
+            <div className={className} onClick={onClick}>
+                {renderedCode}
+            </div>
+        </Context.Provider>
     </ErrorBoundary>;
 });
 

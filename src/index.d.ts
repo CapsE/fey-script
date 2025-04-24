@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import {ObservableSet} from "mobx";
 
 export interface ViewerProps {
     content: string;
@@ -10,3 +11,4 @@ export interface ViewerProps {
 }
 
 export const Viewer: FC<ViewerProps>;
+export declare function getObservable(): ObservableSet;

@@ -1,22 +1,23 @@
 import {toNiceName} from '../util/toNiceName.js';
 import PropTypes from 'prop-types';
 import {observer} from 'mobx-react';
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
+import {Context} from "../Context.js";
 
 
-const Input = observer(({name, label, type, value, context, ...other}) => {
-    const active = context;
+const Input = observer(({name, label, type, value, id, ...other}) => {
+    const {data, onChange, eventTarget} = useContext(Context);
     let innerValueInitial = '';
 
-    if (context[name]) {
-        innerValueInitial = context[name];
+    if (data[name]) {
+        innerValueInitial = data[name];
     } else if (value) {
         innerValueInitial = value;
     }
     const [innerValue, setInnerValue] = useState(innerValueInitial);
 
     useEffect(() => {
-        context[name] = context[name] || innerValue;
+        data[name] = data[name] || innerValue;
     }, []);
 
     const changeHandler = (e) => {
@@ -32,10 +33,23 @@ const Input = observer(({name, label, type, value, context, ...other}) => {
         }
     };
 
+    const blurHandler = (e) => {
+        eventTarget.focusedElement = null;
+        setTimeout(() => {
+            onChange({
+                ...data,
+                [name]: innerValue
+            });
+        }, 0);
+    }
+
     return <div>
         <label>{label ? label : toNiceName(name)}</label>
         <input
+            id={name + '_' + id}
             onChange={changeHandler}
+            onBlur={blurHandler}
+            onFocus={() => eventTarget.focusedElement = name + '_' + id}
             type={type ? type : 'text'}
             value={innerValue}
             {...other}
@@ -61,7 +75,6 @@ export function remarkInputPlugin(context) {
             if (node.type === 'text' && match) {
                 const newNodes = [];
                 let remaining = node.value;
-
                 while (match) {
                     const start = match.index;
                     const matched = match[0];
@@ -89,11 +102,12 @@ export function remarkInputPlugin(context) {
                     newNodes.push({
                         type: 'input',
                         value: <Input
+                            key={`${name}_${start}-${end}`}
+                            id={`${start}-${end}`}
                             name={name}
                             type={type || 'number'}
                             label={label}
                             value={value || ''}
-                            context={context || {}}
                             {...other}
                         />,
                     });
