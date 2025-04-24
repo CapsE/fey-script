@@ -19,6 +19,7 @@ import yaml from 'yaml';
 import {Context} from "../Context.js";
 import {useEffect, useMemo, useState} from "react";
 import {FocusManager} from "../FocusManager.js";
+import styles from './Viewer.module.css';
 
 /**
  * Evaluate the given code with the given context
@@ -105,7 +106,7 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
             onChange,
             eventTarget
         }}>
-            <div className={className} onClick={onClick}>
+            <div className={`${className} ${styles.viewer}`} onClick={onClick}>
                 <ReactMarkdown
                     remarkPlugins={plugins}
                     components={{
