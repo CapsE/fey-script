@@ -11,7 +11,7 @@ import {remarkDicePlugin} from '../remark-plugins/dice-rolls.jsx';
 import {remarkInputPlugin} from '../remark-plugins/input.jsx';
 import {Row} from './components/Row.jsx';
 import {Inventory} from './components/Inventory.jsx';
-import {remarkMathPlugin} from '../remark-plugins/math.jsx';
+import {scopeMathPlugin} from '../remark-plugins/math.jsx';
 import {ErrorBoundary} from '../ErrorBoundary.jsx';
 import remarkLinkTarget from '../remark-plugins/link.jsx';
 import {Shareable} from '../Shareable.jsx';
@@ -63,9 +63,16 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
         content = content.replace(match[0], '');
     }
 
+    if(frontMatterData) {
+        data = {
+            ...frontMatterData,
+            ...data,
+        }
+    }
+
     const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
     content = content.replace(ifRegex, (match, varName, content) => {
-        const value = safeEval(varName, frontMatterData);
+        const value = safeEval(varName, data);
 
         return value ? content : '';
     });
@@ -79,31 +86,12 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
     const plugins = [
         remarkInputPlugin,
         remarkDicePlugin,
-        remarkMathPlugin,
+        scopeMathPlugin(data),
         remarkDirective,
         remarkDirectiveRehype,
         remarkGfm,
         remarkLinkTarget,
     ];
-
-    const renderedCode = useMemo(() => {
-        return  <ReactMarkdown
-            remarkPlugins={plugins}
-            components={{
-                'row': Row,
-                'cols': Cols,
-                'image': Image,
-                'flex': Grid,
-                'grid': Grid,
-                'grid2': Grid,
-                'grid3': Grid3,
-                'grid4': Grid4,
-                'box': Box,
-                'inventory': Inventory,
-                'shareable': SourceExtract,
-            }}
-        >{content}</ReactMarkdown>
-    }, [content]);
 
     return <ErrorBoundary
             key={Date.now()}
@@ -118,7 +106,22 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
             eventTarget
         }}>
             <div className={className} onClick={onClick}>
-                {renderedCode}
+                <ReactMarkdown
+                    remarkPlugins={plugins}
+                    components={{
+                        'row': Row,
+                        'cols': Cols,
+                        'image': Image,
+                        'flex': Grid,
+                        'grid': Grid,
+                        'grid2': Grid,
+                        'grid3': Grid3,
+                        'grid4': Grid4,
+                        'box': Box,
+                        'inventory': Inventory,
+                        'shareable': SourceExtract,
+                    }}
+                >{content}</ReactMarkdown>
             </div>
         </Context.Provider>
     </ErrorBoundary>;
