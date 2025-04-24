@@ -12,6 +12,7 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
+    "@dice-roller/rpg-dice-roller": "^5.5.1",
     "mobx": "^6.13.6",
     "mobx-react": "^9.2.0",
     "prop-types": "^15.8.1",

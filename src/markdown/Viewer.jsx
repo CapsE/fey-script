@@ -20,6 +20,7 @@ import {Context} from "../Context.js";
 import {useEffect, useMemo, useState} from "react";
 import {FocusManager} from "../FocusManager.js";
 import styles from './Viewer.module.css';
+import {rollDice} from "../Dice.js";
 
 /**
  * Evaluate the given code with the given context
@@ -40,7 +41,7 @@ export function safeEval(code, context) {
     }
 }
 
-export const Viewer = observer(({className, content, data, onChange, onClick}) => {
+export const Viewer = observer(({className, content, data, onChange, onClick, onDiceRoll}) => {
     const eventTarget = useMemo(() => new FocusManager(), []);
 
     useEffect(() => {
@@ -48,6 +49,10 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
             document.getElementById(eventTarget.focusedElement).focus();
         }
     });
+
+    const diceRollHandler = (notation) => {
+        onDiceRoll && onDiceRoll(rollDice(notation));
+    }
 
     const regex = /^---\n([\s\S]*?)\n---/g;
     const match = regex.exec(content);
@@ -104,7 +109,8 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
         <Context.Provider value={{
             data,
             onChange,
-            eventTarget
+            eventTarget,
+            onDiceRoll: diceRollHandler
         }}>
             <div className={`${className} ${styles.viewer}`} onClick={onClick}>
                 <ReactMarkdown
@@ -131,6 +137,7 @@ export const Viewer = observer(({className, content, data, onChange, onClick}) =
 Viewer.propTypes = {
     content: PropTypes.string,
     className: PropTypes.string,
-    main: PropTypes.bool,
     data: PropTypes.object,
+    onChange: PropTypes.func,
+    onDiceRoll: PropTypes.func,
 };

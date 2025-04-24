@@ -6,7 +6,7 @@ export interface ViewerProps {
     data: object;
     onClick?: () => void;
     onChange?: (value: object) => void;
-
+    onDiceRoll?: (value: object) => void;
 }
 
 export const Viewer: FC<ViewerProps>;

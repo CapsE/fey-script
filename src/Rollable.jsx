@@ -1,20 +1,15 @@
 import PropTypes from 'prop-types';
-
-const rollHandler = async (notation) => {
-    const event = new CustomEvent('roll', {detail: {
-            title: notation,
-            notation,
-        }});
-    window.dispatchEvent(event);
-};
+import {useContext} from "react";
+import {Context} from "./Context.js";
 
 export const Rollable = ({value, label, color, onRoll}) => {
+    const {onDiceRoll} = useContext(Context);
     if (value.indexOf('+-') === 0) {
         value = value.replace('+-', '-');
     }
     return <a title={value} href="#" style={{color}} onClick={(e) => {
         e.preventDefault();
-        onRoll ? onRoll(value) : rollHandler(value);
+        onRoll ? onRoll(value) : onDiceRoll(value);
     }}>{label || value}</a>;
 };
 
