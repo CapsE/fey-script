@@ -4,7 +4,6 @@ import remarkGfm from 'remark-gfm';
 import {Cols} from './components/Cols';
 import {Grid, Grid3, Grid4} from './components/Grid';
 import ReactMarkdown from 'react-markdown';
-import {observer} from 'mobx-react';
 import {Box} from './components/Box';
 import PropTypes from 'prop-types';
 import {remarkDicePlugin} from '../remark-plugins/dice-rolls.jsx';
@@ -17,7 +16,7 @@ import remarkLinkTarget from '../remark-plugins/link.jsx';
 import {Shareable} from '../Shareable.jsx';
 import yaml from 'yaml';
 import {Context} from "../Context.js";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo} from "react";
 import {FocusManager} from "../FocusManager.js";
 import styles from './Viewer.module.css';
 import {rollDice} from "../Dice.js";
@@ -42,7 +41,7 @@ export function safeEval(code, context) {
     }
 }
 
-export const Viewer = observer(({className, content, data, onChange, onClick, onDiceRoll}) => {
+export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll}) => {
     const eventTarget = useMemo(() => new FocusManager(), []);
 
     useEffect(() => {
@@ -134,7 +133,7 @@ export const Viewer = observer(({className, content, data, onChange, onClick, on
             </div>
         </Context.Provider>
     </ErrorBoundary>;
-});
+};
 
 Viewer.propTypes = {
     content: PropTypes.string,

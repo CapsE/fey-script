@@ -1,11 +1,10 @@
 import {toNiceName} from '../util/toNiceName.js';
 import PropTypes from 'prop-types';
-import {observer} from 'mobx-react';
 import {useContext, useEffect, useState} from 'react';
 import {Context} from "../Context.js";
 
 
-const Input = observer(({name, label, type, value, id, ...other}) => {
+const Input = ({name, label, type, value, id, ...other}) => {
     const {data, onChange, eventTarget} = useContext(Context);
     let innerValueInitial = '';
 
@@ -55,7 +54,7 @@ const Input = observer(({name, label, type, value, id, ...other}) => {
             {...other}
         />
     </div>;
-});
+};
 
 Input.propTypes = {
     name: PropTypes.string,
