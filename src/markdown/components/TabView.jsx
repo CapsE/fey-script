@@ -3,16 +3,14 @@ import styles from './TabView.module.css';
 import {Viewer} from "../Viewer.jsx";
 import {Context} from "../../Context.js";
 
-// <Context.Provider value={{
-//     data,
-//     onChange,
-//     eventTarget,
-//     onDiceRoll: diceRollHandler
-// }}>
+export function TabView({ tabs, key }) {
+    const {data, onChange, onDiceRoll, eventTarget} = useContext(Context);
+    const [active, setActive] = useState(eventTarget.activeTabs[key] || 0);
 
-export function TabView({ tabs }) {
-    const [active, setActive] = useState(0);
-    const {data, onChange, onDiceRoll} = useContext(Context);
+    const onSwitchActive = (i) => {
+        setActive(i);
+        eventTarget.activeTabs[key] = i;
+    }
 
     return (
         <div className={styles.tabview}>
@@ -21,13 +19,13 @@ export function TabView({ tabs }) {
                     <button
                         key={i}
                         className={i === active ? styles.active : ''}
-                        onClick={() => setActive(i)}
+                        onClick={() => onSwitchActive(i)}
                     >
                         {tab.title}
                     </button>
                 ))}
             </div>
-            <div className="tab-content">
+            <div className={styles.tabContent}>
                 <Viewer
                     data={data}
                     onChange={onChange}

@@ -29,7 +29,7 @@ export default function remarkTabview() {
                     newChildren.push({
                         type: 'TabView',
                         name: 'TabView',
-                        value: <TabView tabs={tabs} />,
+                        value: <TabView key={`tabView-${node.position.start}-${node.position.end}`} tabs={tabs} />,
                     })
                 } else {
                     newChildren.push(child);
