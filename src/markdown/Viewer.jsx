@@ -21,6 +21,7 @@ import {useEffect, useMemo, useState} from "react";
 import {FocusManager} from "../FocusManager.js";
 import styles from './Viewer.module.css';
 import {rollDice} from "../Dice.js";
+import remarkTabview from "../remark-plugins/tab-view.jsx";
 
 /**
  * Evaluate the given code with the given context
@@ -90,6 +91,7 @@ export const Viewer = observer(({className, content, data, onChange, onClick, on
     };
 
     const plugins = [
+        remarkTabview,
         remarkInputPlugin,
         remarkDicePlugin,
         scopeMathPlugin(data),
