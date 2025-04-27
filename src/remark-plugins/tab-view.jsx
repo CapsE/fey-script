@@ -16,16 +16,19 @@ export default function remarkTabview() {
                 const tabs = [];
                 if (paragraphIsTabView(child)) {
                     child.children.forEach((childNode) => {
+                        console.log(childNode);
                         if (childNode.type === 'text') {
-                            const tabsCode = childNode.value.split(/\|-- (.+?) ---/);
+                            const tabsCode = childNode.value.split(/(?:^|\n)\|-- (.+?) ---/);
+                            console.log(tabsCode);
                             for(let i = 1; i < tabsCode.length; i += 2) {
                                 tabs.push({
                                     title: tabsCode[i],
-                                    content: tabsCode[i + 1].replace(/\n\|/g, '\n').replace(/---/g, '').trim(),
+                                    content: tabsCode[i + 1].replace(/\n\|/g, '\n').replace(/\n---/g, '').trim(),
                                 });
                             }
                         }
                     });
+                    console.log(tabs);
                     newChildren.push({
                         type: 'TabView',
                         name: 'TabView',
