@@ -2,7 +2,6 @@ import {SimpleSchema2Bridge} from 'uniforms-bridge-simple-schema-2';
 import SimpleSchema from 'simpl-schema';
 import styles from './Inventory.module.css';
 import {AutoField, AutoForm, ListDelField, ListField} from 'uniforms-semantic';
-import {observer} from 'mobx-react';
 
 const bridge = new SimpleSchema2Bridge(
     new SimpleSchema({
@@ -27,7 +26,7 @@ const CustomItemField = ({name, ...props}) => (
     </tr>
 );
 
-export const Inventory = observer(({character}) => {
+export const Inventory = ({character}) => {
     const char = character;
     const inventory = char?.inventory;
 
@@ -52,4 +51,4 @@ export const Inventory = observer(({character}) => {
 
         </AutoForm>
     </div>;
-});
+};

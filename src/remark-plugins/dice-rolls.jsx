@@ -1,4 +1,4 @@
-import Rollable from '../Rollable';
+import Rollable from '../components/Rollable.jsx';
 
 /**
  * Custom plugin to replace text with links

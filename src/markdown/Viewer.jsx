@@ -13,7 +13,7 @@ import {Inventory} from './components/Inventory.jsx';
 import {scopeMathPlugin} from '../remark-plugins/math.jsx';
 import {ErrorBoundary} from '../ErrorBoundary.jsx';
 import remarkLinkTarget from '../remark-plugins/link.jsx';
-import {Shareable} from '../Shareable.jsx';
+import {Shareable} from '../components/Shareable.jsx';
 import yaml from 'yaml';
 import {Context} from "../Context.js";
 import {useEffect, useMemo} from "react";
@@ -21,6 +21,7 @@ import {FocusManager} from "../FocusManager.js";
 import styles from './Viewer.module.css';
 import {rollDice} from "../Dice.js";
 import remarkTabview from "../remark-plugins/tab-view.jsx";
+import MDXRenderer from "../MDXRenderer.js";
 
 /**
  * Evaluate the given code with the given context
@@ -89,17 +90,6 @@ export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll}
         </Shareable>;
     };
 
-    const plugins = [
-        remarkTabview,
-        remarkInputPlugin,
-        remarkDicePlugin,
-        scopeMathPlugin(data),
-        remarkDirective,
-        remarkDirectiveRehype,
-        remarkGfm,
-        remarkLinkTarget,
-    ];
-
     return <ErrorBoundary
             key={Date.now()}
             FallbackComponent={() => <div className="center">Invalid Stats</div>}
@@ -114,22 +104,7 @@ export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll}
             onDiceRoll: diceRollHandler
         }}>
             <div className={`${className} ${styles.viewer}`} onClick={onClick}>
-                <ReactMarkdown
-                    remarkPlugins={plugins}
-                    components={{
-                        'row': Row,
-                        'cols': Cols,
-                        'image': Image,
-                        'flex': Grid,
-                        'grid': Grid,
-                        'grid2': Grid,
-                        'grid3': Grid3,
-                        'grid4': Grid4,
-                        'box': Box,
-                        'inventory': Inventory,
-                        'shareable': SourceExtract,
-                    }}
-                >{content}</ReactMarkdown>
+                <MDXRenderer code={content} context={data} />
             </div>
         </Context.Provider>
     </ErrorBoundary>;

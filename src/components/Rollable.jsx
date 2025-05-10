@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import {useContext} from "react";
-import {Context} from "./Context.js";
+import {Context} from "../Context.ts";
 
 export const Rollable = ({value, label, color, onRoll}) => {
     const {onDiceRoll} = useContext(Context);

@@ -1,5 +1,5 @@
-import styles from './Shareable.module.css';
-import ChatIcon from './icons/talk.svg';
+import styles from '../Shareable.module.css';
+import ChatIcon from '../icons/talk.svg';
 import {useRef} from 'react';
 
 export const Shareable = ({children, toShare}) => {
