@@ -29,20 +29,44 @@ const types = {
 
 const jsxData = [];
 
-const inputReplacer = (str: string) => {
-    const regex = /i\[(.*?)\]/g;
-    let match = regex.exec(str);
+function makeReplacer({
+                          regex,
+                          getReplacement,
+                          onMatch
+                      }: {
+    regex: RegExp,
+    getReplacement: (match: RegExpExecArray, index: number) => string,
+    onMatch?: (match: RegExpExecArray, index: number) => void
+}) {
+    return (str: string) => {
+        let match;
+        let index = 0;
 
-    while (match) {
-        const start = match.index;
-        const matched = match[0];
-        const end = start + matched.length;
-        const captured = match[1];
+        while ((match = regex.exec(str)) !== null) {
+            const start = match.index;
+            const matched = match[0];
+            const end = start + matched.length;
 
-        const [name, json] = captured.split(';');
-        let obj = {
-            name,
-        };
+            const replacement = getReplacement(match, index);
+
+            if (onMatch) onMatch(match, index);
+
+            str = replaceRange(str, start, end, replacement);
+            index++;
+        }
+
+        return str;
+    };
+}
+
+// Specific replacers using makeReplacer
+const inputReplacer = makeReplacer({
+    regex: /i\[(.*?)\]/g,
+    getReplacement: (_match, index) => `<Wrapper type="Input" id="${jsxData.length}" />`,
+    onMatch: (match) => {
+        const [name, json] = match[1].split(';');
+        let obj: any = { name };
+
         if (json) {
             try {
                 obj = JSON.parse(json);
@@ -50,69 +74,36 @@ const inputReplacer = (str: string) => {
                 console.error(e);
             }
         }
-        obj.value = `${name}_${start}-${end}`;
-        obj.key = `${start}-${end}`;
+
+        obj.value = `${name}_${match.index}-${match.index + match[0].length}`;
+        obj.key = `${match.index}-${match.index + match[0].length}`;
         obj.type = obj.type || 'number';
 
-        str = replaceRange(str, start, end, `<Wrapper type="Input" id="${jsxData.length}" />`);
         jsxData.push(obj);
-
-        match = regex.exec(str);
     }
+});
 
-    return str;
-};
+const diceReplacer = makeReplacer({
+    regex: /((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+|([+\-]{1,2}\d+)/g,
+    getReplacement: (match) => {
+        jsxData.push({ value: match[0] });
+        return `<Wrapper type="Rollable" id="${jsxData.length - 1}" />`;
+    }
+});
 
-const evalReplacer = (str: string, context) => {
-    const regex =  /\{\{(.*?)\}\}/g;
-    let match = regex.exec(str);
-
-    while (match) {
-        const start = match.index;
-        const matched = match[0];
-        const end = start + matched.length;
-        const captured = match[1];
-
-        let value = 'X';
-        try {
-            value = safeEval(captured, context);
-            if (!value && value !== 0) {
-                value = 'X';
+const evalReplacer = (str: string, context) =>
+    makeReplacer({
+        regex: /\{\{(.*?)\}\}/g,
+        getReplacement: (match) => {
+            try {
+                const value = safeEval(match[1], context);
+                return value ?? 'X';
+            } catch (error) {
+                console.warn('Error evaluating expression:', error);
+                return 'X';
             }
-        } catch (error) {
-            console.warn('Error evaluating expression:', error);
         }
-
-        str = replaceRange(str, start, end, value);
-
-
-        match = regex.exec(str);
-    }
-
-    return str;
-};
-
-const diceReplacer = (str: string) => {
-    const regex =  /((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+|([+\-]{1,2}\d+)/g;
-    let match = regex.exec(str);
-
-    while (match) {
-        const start = match.index;
-        const matched = match[0];
-        const end = start + matched.length;
-        const captured = match[1];
-
-        str = replaceRange(str, start, end, `<Wrapper type="Rollable" id="${jsxData.length}" />`);
-        jsxData.push({
-            value: matched
-        });
-
-
-        match = regex.exec(str);
-    }
-
-    return str;
-}
+    })(str);
 
 const Wrapper = ({type, id}) => {
     return React.createElement(types[type], jsxData[id]);
