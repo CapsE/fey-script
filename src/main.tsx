@@ -11,6 +11,23 @@ Roll +5 or maybe 2d6+4
 i[modifier]
 
 You might want to roll +{{modifier}}
+
+## Now for some longer text
+-|-
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+
+#### Small Headline
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+exercitationem iure laboriosam, magni nobis 2d6+2 placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+
+exercitationem iure __laboriosam__, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+-|-
 `;
 
 const Main = ({code}) => {
