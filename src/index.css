@@ -18,3 +18,7 @@
   height: calc(100vh - 35px);
   background-color: var(--background);
 }
+
+a {
+  color: teal;
+}

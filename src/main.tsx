@@ -6,9 +6,11 @@ import {Viewer} from "./index";
 const rootElement: HTMLElement|null = document.getElementById('root');
 
 const code = `# Hello World 
-i[hp]
-{{hp + 5}}
-i[mp]
+Roll +5 or maybe 2d6+4
+
+i[modifier]
+
+You might want to roll +{{modifier}}
 `;
 
 const Main = ({code}) => {
@@ -18,6 +20,7 @@ const Main = ({code}) => {
         content={code}
         data={data}
         onChange={(d) => setData(d)}
+        onDiceRoll={(d) => alert(d.result.output)}
     />;
 };
 

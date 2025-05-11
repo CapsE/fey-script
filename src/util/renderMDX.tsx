@@ -1,6 +1,7 @@
 import {evaluate} from "@mdx-js/mdx";
 import * as runtime from 'react/jsx-runtime';
 import {Input} from '../components/input';
+import {Rollable} from '../components/Rollable.jsx';
 import React from "react";
 
 const DataContext = React.createContext([]);
@@ -23,6 +24,7 @@ export function safeEval(code, context) {
 
 const types = {
     Input,
+    Rollable
 }
 
 const jsxData = [];
@@ -48,7 +50,7 @@ const inputReplacer = (str: string) => {
                 console.error(e);
             }
         }
-        obj.id = `${name}_${start}-${end}`;
+        obj.value = `${name}_${start}-${end}`;
         obj.key = `${start}-${end}`;
         obj.type = obj.type || 'number';
 
@@ -81,9 +83,6 @@ const evalReplacer = (str: string, context) => {
             console.warn('Error evaluating expression:', error);
         }
 
-        // str = replaceRange(str, start, end, `<Wrapper type="Input" id="${jsxData.length}" />`);
-
-
         str = replaceRange(str, start, end, value);
 
 
@@ -93,6 +92,28 @@ const evalReplacer = (str: string, context) => {
     return str;
 };
 
+const diceReplacer = (str: string) => {
+    const regex =  /((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+|([+\-]{1,2}\d+)/g;
+    let match = regex.exec(str);
+
+    while (match) {
+        const start = match.index;
+        const matched = match[0];
+        const end = start + matched.length;
+        const captured = match[1];
+
+        str = replaceRange(str, start, end, `<Wrapper type="Rollable" id="${jsxData.length}" />`);
+        jsxData.push({
+            value: matched
+        });
+
+
+        match = regex.exec(str);
+    }
+
+    return str;
+}
+
 const Wrapper = ({type, id}) => {
     return React.createElement(types[type], jsxData[id]);
 }
@@ -101,6 +122,7 @@ export function renderMDX(mdx, context) {
     return new Promise((resolve) => {
         // Input
         mdx = evalReplacer(mdx, context);
+        mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);
 
         evaluate(mdx, {
