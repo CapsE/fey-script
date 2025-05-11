@@ -1,5 +1,5 @@
 import { visit } from 'unist-util-visit';
-import {TabView} from "../markdown/components/TabView.jsx";
+import {TabView} from "../components/TabView.jsx";
 
 const paragraphIsTabView = (node) =>  node.type === 'paragraph' &&
     node.children &&

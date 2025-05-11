@@ -2,6 +2,7 @@ import { evaluate } from "@mdx-js/mdx";
 import * as runtime from "react/jsx-runtime";
 import { Input } from "../components/input";
 import { Rollable } from "../components/Rollable.jsx";
+import {TabView} from "../components/TabView.jsx";
 import React, {ReactNode, useEffect, useState} from "react";
 import {Await} from "../components/Await.tsx";
 
@@ -57,7 +58,8 @@ const Columns: React.FC<WrapperProps> = ({ value, context }) => {
 const types = {
     Input,
     Rollable,
-    Columns
+    Columns,
+    TabView
 };
 
 // -- JSX Data Storage --
@@ -137,6 +139,27 @@ const columnReplacer = (str: string, context: Record<string, any>): string =>
         }
     })(str);
 
+const tabReplacer = (str: string): string =>
+    makeReplacer({
+        regex:  /(\|-- .+? ---[\s\S]*?\|---)/g,
+        getReplacement: (match) => {
+            console.log(match);
+            const tabsCode = match[1].split(/(?:^|\n)\|-- (.+?) ---/);
+            console.log(tabsCode);
+            const tabs = [];
+            for(let i = 1; i < tabsCode.length; i += 2) {
+                tabs.push({
+                    title: tabsCode[i],
+                    content: tabsCode[i + 1].replace(/\n\|/g, '\n').replace(/\n---/g, '').trim(),
+                });
+            }
+            jsxData.push({ tabs });
+
+            return `<Wrapper type="TabView" id="${jsxData.length - 1}" />`;
+        }
+    })(str);
+
+
 
 const evalReplacer = (str: string, context: Record<string, any>): string =>
     makeReplacer({
@@ -167,6 +190,7 @@ export function renderMDX(mdx: string, context: Record<string, any>): Promise<Re
         mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);
         mdx = columnReplacer(mdx, context);
+        mdx = tabReplacer(mdx, context);
 
         evaluate(mdx, {
             ...runtime

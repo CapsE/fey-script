@@ -1,7 +1,9 @@
 import {useContext, useState} from 'react';
 import styles from './TabView.module.css';
-import {Viewer} from "../Viewer.jsx";
-import {Context} from "../../Context.js";
+import {Viewer} from "../markdown/Viewer.jsx";
+import {Context} from "../Context.ts";
+import {Await} from "./Await.js";
+import {renderMDX} from "../util/renderMDX.js";
 
 export function TabView({ tabs, key }) {
     const {data, onChange, onDiceRoll, eventTarget} = useContext(Context);
@@ -26,12 +28,7 @@ export function TabView({ tabs, key }) {
                 ))}
             </div>
             <div className={styles.tabContent}>
-                <Viewer
-                    data={data}
-                    onChange={onChange}
-                    content={tabs[active].content}
-                    onDiceRoll={(r) => onDiceRoll(r.notation)}
-                />
+                <Await promise={renderMDX(tabs[active].content, data)} />
             </div>
         </div>
     );
