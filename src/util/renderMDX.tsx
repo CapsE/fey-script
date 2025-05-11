@@ -182,10 +182,20 @@ const Wrapper: React.FC<WrapperProps> = ({ type, id }) => {
     return <Component {...jsxData[id]} />;
 };
 
+function flattenIndentedString(str) {
+    return str
+        .split('\n')
+        .map((line) => line.trim()) // remove leading/trailing spaces from each line
+        .filter((line) => line.length > 0) // remove empty lines
+        .join('\n'); // join into a single line with spaces
+}
+
 // -- Render Function --
 
 export function renderMDX(mdx: string, context: Record<string, any>): Promise<ReactNode> {
     return new Promise((resolve) => {
+        mdx = flattenIndentedString(mdx);
+        console.log(mdx);
         mdx = evalReplacer(mdx, context);
         mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);

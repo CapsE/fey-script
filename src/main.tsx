@@ -14,31 +14,31 @@ You might want to roll +{{modifier}}
 
 ## Now for some longer text
 -|-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
-exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
-
-#### Small Headline
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
-exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
-exercitationem iure laboriosam, magni nobis 2d6+2 placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
-
-exercitationem iure __laboriosam__, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
-exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+    exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    
+    #### Small Headline
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+    exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+    exercitationem iure laboriosam, magni nobis 2d6+2 placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+    
+    exercitationem iure __laboriosam__, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at aut commodi dicta eaque eos eum excepturi
+    exercitationem iure laboriosam, magni nobis placeat quaerat qui repudiandae, sapiente tempore veniam. Nam!
+    
+    ## Tabs should work too
+    |-- Tab One ---
+    |
+    | This should be the content of the __first tab__.
+    |
+    |-- Tab Two ---
+    |
+    | And this is the content of the __second tab__.
+    |
+    |---
 -|-
-
-## Tabs should work too
-|-- Tab One ---
-|
-| This should be the content of the __first tab__.
-|
-|-- Tab Two ---
-|
-| And this is the content of the __second tab__.
-|
-|---
 `;
 
 const Main = ({code}) => {
