@@ -5,6 +5,9 @@ import { Rollable } from "../components/Rollable.jsx";
 import {TabView} from "../components/TabView.jsx";
 import React, {ReactNode, useEffect, useState} from "react";
 import {Await} from "../components/Await.tsx";
+import remarkGfm from "remark-gfm";
+import yaml from "yaml";
+import {Select} from "../components/select.tsx";
 
 // -- Types --
 
@@ -42,6 +45,7 @@ function replaceRange(str: string, x: number, y: number, replacement: string): s
 }
 
 export function safeEval(code: string, context: Record<string, any>): any {
+    context.$mod = (v) => Math.floor((v - 10) / 2) < 0 ? Math.floor((v - 10) / 2) : '+' + Math.floor((v - 10) / 2);
     const keys = Object.keys(context);
     const values = Object.values(context);
     return Function(...keys, `"use strict"; return (${code})`)(...values);
@@ -59,7 +63,8 @@ const types = {
     Input,
     Rollable,
     Columns,
-    TabView
+    TabView,
+    Select
 };
 
 // -- JSX Data Storage --
@@ -143,9 +148,7 @@ const tabReplacer = (str: string): string =>
     makeReplacer({
         regex:  /(\|-- .+? ---[\s\S]*?\|---)/g,
         getReplacement: (match) => {
-            console.log(match);
             const tabsCode = match[1].split(/(?:^|\n)\|-- (.+?) ---/);
-            console.log(tabsCode);
             const tabs = [];
             for(let i = 1; i < tabsCode.length; i += 2) {
                 tabs.push({
@@ -156,6 +159,32 @@ const tabReplacer = (str: string): string =>
             jsxData.push({ tabs });
 
             return `<Wrapper type="TabView" id="${jsxData.length - 1}" />`;
+        }
+    })(str);
+
+const selectReplacer = (str: string, context: Record<string, any>): string =>
+    makeReplacer({
+        regex: /s\[(\S+)\]\[(\n\S+)+\n\]/g,
+        getReplacement: (match) => {
+            console.log(match);
+            const [name, json] = match[1].split(";");
+            let obj: InputProps = { name };
+
+            if (json) {
+                try {
+                    const parsed = JSON.parse(json);
+                    obj = { ...obj, ...parsed };
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            const options = match[0].split("\n");
+            options.shift();
+            options.pop();
+            obj.options = options;
+            jsxData.push(obj);
+            return `<Wrapper type="Select" id="${jsxData.length - 1}" />`;
         }
     })(str);
 
@@ -194,16 +223,46 @@ function flattenIndentedString(str) {
 
 export function renderMDX(mdx: string, context: Record<string, any>): Promise<ReactNode> {
     return new Promise((resolve) => {
+        const regex = /^---\n([\s\S]*?)\n---/g;
+        const match = regex.exec(mdx);
+        let frontMatterData = {};
+
+        // Get content after match
+        if (match) {
+            try {
+                frontMatterData = yaml.parse(match[1]);
+            } catch (err) {
+                console.log(err);
+            }
+
+            mdx = mdx.replace(match[0], '');
+        }
+
+        if(frontMatterData) {
+            context = {
+                ...frontMatterData,
+                ...context,
+            }
+        }
+
+        const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
+        mdx = mdx.replace(ifRegex, (match, varName, content) => {
+            const value = safeEval(varName, context);
+
+            return value ? content : '';
+        });
+
         mdx = flattenIndentedString(mdx);
-        console.log(mdx);
         mdx = evalReplacer(mdx, context);
         mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);
         mdx = columnReplacer(mdx, context);
-        mdx = tabReplacer(mdx, context);
+        mdx = tabReplacer(mdx);
+        mdx = selectReplacer(mdx, context);
 
         evaluate(mdx, {
-            ...runtime
+            ...runtime,
+            remarkPlugins: [remarkGfm]
         }).then(({ default: MDXContent }) => {
             resolve(
                 <DataContext.Provider value={jsxData}>

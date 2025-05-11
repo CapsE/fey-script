@@ -47,7 +47,7 @@ export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll}
 
     useEffect(() => {
         if(eventTarget.focusedElement) {
-            document.getElementById(eventTarget.focusedElement).focus();
+            document.getElementById(eventTarget.focusedElement)?.focus();
         }
     });
 

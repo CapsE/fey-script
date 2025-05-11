@@ -1,0 +1,7 @@
+.input {
+    width: fit-content;
+
+    input {
+        width: 100%;
+    }
+}

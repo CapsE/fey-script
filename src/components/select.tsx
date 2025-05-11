@@ -1,10 +1,9 @@
-import {toNiceName} from '../util/toNiceName.js';
-import PropTypes from 'prop-types';
-import {useContext, useEffect, useState} from 'react';
-import {Context} from "../Context.js";
-import styles from './input.module.css';
+import {useContext, useState} from "react";
+import {Context} from "../Context.ts";
+import styles from "./input.module.css";
+import {toNiceName} from "../util/toNiceName";
 
-export const Input = ({name, label, type, value, id, ...other}) => {
+export const Select = ({name, label, options, value, id, ...other}) => {
     const {data, onChange, eventTarget} = useContext(Context);
     let innerValueInitial = '';
 
@@ -16,16 +15,7 @@ export const Input = ({name, label, type, value, id, ...other}) => {
     const [innerValue, setInnerValue] = useState(innerValueInitial);
 
     const changeHandler = (e) => {
-        if (type === 'number') {
-            const v = parseInt(e.target.value);
-            if (isNaN(v)) {
-                setInnerValue('');
-            } else {
-                setInnerValue(v);
-            }
-        } else {
-            setInnerValue(e.target.value);
-        }
+        setInnerValue(e.target.value);
     };
 
     const blurHandler = (e) => {
@@ -40,20 +30,16 @@ export const Input = ({name, label, type, value, id, ...other}) => {
 
     return <div className={styles.input}>
         <label>{label ? label : toNiceName(name)}</label>
-        <input
+        <select
             id={name + '_' + id}
             onChange={changeHandler}
             onBlur={blurHandler}
             onFocus={() => eventTarget.focusedElement = name + '_' + id}
-            type={type ? type : 'text'}
             value={innerValue}
             {...other}
-        />
+        >
+            <option value="" />
+            {options.map((o) => <option value={o}>{toNiceName(o)}</option>)}
+        </select>
     </div>;
-};
-
-Input.propTypes = {
-    name: PropTypes.string,
-    label: PropTypes.string,
-    type: PropTypes.string,
 };
