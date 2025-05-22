@@ -20,6 +20,8 @@ export const Input = ({name, label, type, value, id, ...other}) => {
             const v = parseInt(e.target.value);
             if (isNaN(v)) {
                 setInnerValue('');
+            } else if (v > other.max) {
+                setInnerValue(other.max);
             } else {
                 setInnerValue(v);
             }
@@ -72,6 +74,7 @@ export const Input = ({name, label, type, value, id, ...other}) => {
             value={innerValue}
             {...other}
         />}
+        {other.max && type !== 'checkmarks' ? <div className={styles.maxDisplay}>/{other.max}</div> : null}
     </div>;
 };
 
