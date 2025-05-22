@@ -8,6 +8,7 @@ import {Await} from "../components/Await.tsx";
 import remarkGfm from "remark-gfm";
 import yaml from "yaml";
 import {Select} from "../components/select.tsx";
+import {Grid} from "../components/grid.tsx";
 
 // -- Types --
 
@@ -64,7 +65,8 @@ const types = {
     Rollable,
     Columns,
     TabView,
-    Select
+    Select,
+    Grid
 };
 
 // -- JSX Data Storage --
@@ -141,6 +143,15 @@ const columnReplacer = (str: string, context: Record<string, any>): string =>
         getReplacement: (match) => {
             jsxData.push({ value: match[1], context });
             return `<Wrapper type="Columns" id="${jsxData.length - 1}" />`;
+        }
+    })(str);
+
+const gridReplacer = (str: string, context: Record<string, any>): string =>
+    makeReplacer({
+        regex:  /:::grid-(\d(-\d)*)?\n([\s\S]*?)\n:::/g,
+        getReplacement: (match) => {
+            jsxData.push({ cols: match[1], content: match[3], context });
+            return `<Wrapper type="Grid" id="${jsxData.length - 1}" />`;
         }
     })(str);
 
@@ -254,6 +265,7 @@ export function renderMDX(mdx: string, context: Record<string, any>): Promise<Re
 
         mdx = flattenIndentedString(mdx);
         mdx = evalReplacer(mdx, context);
+        mdx = gridReplacer(mdx, context);
         mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);
         mdx = columnReplacer(mdx, context);

@@ -16,9 +16,18 @@ cha: 17
 # Hello World 
 Roll +5 or maybe 2d6+4
 
+:::grid-5
+
 i[modifier]
 
 You might want to roll +{{modifier}}
+:::
+:::grid-3-2
+
+i[modifier]
+
+You might want to roll +{{modifier}}
+:::
 
 Select your class
 s[className][
