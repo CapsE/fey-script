@@ -39,7 +39,10 @@ export const Select = ({name, label, options, value, id, ...other}) => {
             {...other}
         >
             <option value="" />
-            {options.map((o) => <option value={o}>{toNiceName(o)}</option>)}
+            {options.map((o) => {
+                const [label, value] = o.split('|');
+                return <option value={value || label}>{toNiceName(label)}</option>
+            })}
         </select>
     </div>;
 };

@@ -10,7 +10,6 @@ export function Await<T>({ promise, fallback = 'Loading...' }: AwaitProps<T>) {
     const [state, setState] = useState(fallback);
 
     useEffect(() => {
-        setState(fallback); // reset state on new promise
         promise.then((data) => setState(data))
 
     }, [promise]);

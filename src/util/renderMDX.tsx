@@ -183,7 +183,6 @@ const selectReplacer = (str: string, context: Record<string, any>): string =>
     makeReplacer({
         regex: /s\[(\S+)\]\[(\n\S+)+\n\]/g,
         getReplacement: (match) => {
-            console.log(match);
             const [name, json] = match[1].split(";");
             let obj: InputProps = { name };
 

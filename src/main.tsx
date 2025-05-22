@@ -12,6 +12,7 @@ con: 15
 int: 8
 wis: 6
 cha: 17
+modifier: 3
 ---
 # Hello World 
 Roll +5 or maybe 2d6+4
@@ -31,6 +32,13 @@ s[className][
 Warrior
 Rogue
 Mage
+]
+
+Proficency Select
+s[proficiency][
+None|0
+Proficient|1
+Expertise|2
 ]
 
 :::if className === "Mage"
