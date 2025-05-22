@@ -12,10 +12,12 @@
     background: none;
     border: none;
     cursor: pointer;
+    color: white;
 }
 .tab-buttons button.active {
     background: #eee;
     font-weight: bold;
+    color: black;
 }
 .tabContent {
     padding: 8px;

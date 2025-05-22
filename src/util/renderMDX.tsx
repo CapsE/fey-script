@@ -118,7 +118,7 @@ const inputReplacer = makeReplacer({
             obj.max = data.split('/')[1];
         } else if (data) {
             try {
-                const parsed = JSON.parse(json);
+                const parsed = JSON.parse(data);
                 obj = { ...obj, ...parsed };
             } catch (e) {
                 console.error(e);
