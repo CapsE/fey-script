@@ -21,12 +21,9 @@ Roll +5 or maybe 2d6+4
 i[modifier]
 
 You might want to roll +{{modifier}}
-:::
-:::grid-3-2
 
-i[modifier]
-
-You might want to roll +{{modifier}}
+i[hp|3/6]
+i[hp|[3/6]]
 :::
 
 Select your class

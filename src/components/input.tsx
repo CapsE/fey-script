@@ -38,9 +38,32 @@ export const Input = ({name, label, type, value, id, ...other}) => {
         }, 0);
     }
 
+    const elements = [];
+    if(type === 'checkmarks') {
+        for (let i = 0; i < other.max; i++) {
+            elements.push(<input
+                key={`checkmarks-${i}`}
+                type="checkbox"
+                checked={i < innerValue}
+                onChange={(e) => {
+                    let v = e.target.checked ? parseInt(innerValue) + 1 : parseInt(innerValue) - 1;
+                    setInnerValue(v);
+                    eventTarget.focusedElement = null;
+                    onChange({
+                        ...data,
+                        [name]: v
+                    });
+                }}
+            />);
+        }
+    }
+
     return <div className={styles.input}>
         <label>{label ? label : toNiceName(name)}</label>
-        <input
+        {type === 'checkmarks' ? <div className={styles.checkmarks}>
+                {elements}
+            </div>
+            :<input
             id={name + '_' + id}
             onChange={changeHandler}
             onBlur={blurHandler}
@@ -48,7 +71,7 @@ export const Input = ({name, label, type, value, id, ...other}) => {
             type={type ? type : 'text'}
             value={innerValue}
             {...other}
-        />
+        />}
     </div>;
 };
 

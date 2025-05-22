@@ -103,13 +103,20 @@ function makeReplacer({ regex, getReplacement, onMatch }: ReplacerArgs): (str: s
 // -- Replacers --
 
 const inputReplacer = makeReplacer({
-    regex: /i\[(.*?)\]/g,
+    regex: /i\[(.*?)\]\W/g,
     getReplacement: (_match, _index) => `<Wrapper type="Input" id="${jsxData.length}" />`,
     onMatch: (match) => {
-        const [name, json] = match[1].split(";");
+        const [name, data] = match[1].split("|");
         let obj: InputProps = { name };
 
-        if (json) {
+        if (/\[\d+\/\d+/.test(data)) {
+            obj.value = data.split('/')[0].slice(1);
+            obj.max = data.split('/')[1];
+            obj.type = "checkmarks";
+        } else if (/\d+\/\d+/.test(data)) {
+            obj.value = data.split('/')[0];
+            obj.max = data.split('/')[1];
+        } else if (data) {
             try {
                 const parsed = JSON.parse(json);
                 obj = { ...obj, ...parsed };
@@ -121,7 +128,6 @@ const inputReplacer = makeReplacer({
         const start = match.index;
         const end = start + match[0].length;
 
-        obj.value = `${name}_${start}-${end}`;
         obj.key = `${start}-${end}`;
         obj.type = obj.type || "number";
 
