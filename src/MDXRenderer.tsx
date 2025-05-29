@@ -1,10 +1,10 @@
 import {renderMDX} from './util/renderMDX';
 import {useEffect, useState} from "react";
-export default function MDXRenderer({ code, context }) {
+export default function MDXRenderer({ code, context, resolveImport }) {
     const [renderedContent, setRenderedContent] = useState(null);
 
     useEffect(() => {
-        renderMDX(code, context).then((result) => {
+        renderMDX(code, context, resolveImport).then((result) => {
             setRenderedContent(result);
         })
     }, [code]);

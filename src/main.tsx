@@ -1,98 +1,66 @@
 import {StrictMode, useState} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
-import {Viewer} from "./index";
+import {DiceRollResult, Viewer} from "./index";
+import code from './test-data.md?raw';
 
 const rootElement: HTMLElement | null = document.getElementById('root');
 
-const code = `---
-str: 10
-dex: 12
-con: 15
-int: 8
-wis: 6
-cha: 17
----
-# Fey-Script
-As always Fey-Script allows you to roll +5 or maybe 2d6+4.
+const importables: { [key: string]: string } = {
+    'spells/magehand': `
+        #### Mage Hand
 
-## Inputs
-Inputs come in new shapes now:
+        *Conjuration cantrip*
+        
+        **Casting Time:** 1 action
+        
+        **Range:** 30 feet
+        
+        **Components:** V, S
+        
+        **Duration:** 1 minute
+        
+        A spectral, floating hand appears at a point you choose within range. The hand lasts for the duration or until you dismiss it as an action. The hand vanishes if it is ever more than 30 feet away from you or if you cast this spell again.
+        
+        You can use your action to control the hand. You can use the hand to manipulate an object, open an unlocked door or container, stow or retrieve an item from an open container, or pour the contents out of a vial. You can move the hand up to 30 feet each time you use it.
+        
+        The hand can’t attack, activate magic items, or carry more than 10 pounds.
 
-:::grid-5
-i[text|{"type":"text", "value": "Hello World"}]
-i[numbers|{"value": 42}]
-i[numbersWithMaxValue|25/33]
-i[numberOfCheckboxes|[3/6]]
-s[selects][
-Warrior
-Rogue
-Mage
-]
-:::
+    `,
+    'spells/fireball': `
+        #### Fireball
 
-## Conditional Rendering
-Depending on set inputs values parts of your document can be hidden or shown
+        *3rd-level evocation*
+        
+        **Casting Time:** 1 action
+        
+        **Range:** 150 feet
+        
+        **Components:** V, S, M (a tiny ball of bat guano and sulfur)
+        
+        **Duration:** Instantaneous
+        
+        A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.
+        
+        The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried.
+        
+        ***At Higher Levels.*** When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
+    `
+}
 
-:::if selects === "Mage"
-## Mage
-Mages are very powerful spell casters
-:::
-:::if selects === "Rogue"
-## Rogue
-Rogues are very sneaky
-:::
-:::if selects === "Warrior"
-## Warrior
-Warriors are very strong
-:::
+type Props = {
+    code: string;
+};
 
-
-## Textflow
--|-
-    It's possible to let parts of your document flow in two columns. This works not only for text but for all elements.
-    As you can see tables are supported too. There is also a helper function making it easier to calculate DnD5e's modifiers
-    
-    #### DnD Stats
-    |                |        |        |        |        |        |
-    |----------------|--------|--------|--------|--------|--------|
-    | i[str]         | i[dex]        | i[con]        | i[int]        | i[wis]        | i[cha]        |
-    | {{$mod(str)}}  | {{$mod(dex)}} | {{$mod(con)}} | {{$mod(int)}} | {{$mod(wis)}} | {{$mod(cha)}} |
-
-    
-    ## Tabs
-    This new addition allows it to group and filter information on the fly. This will likely be used to
-    replace the current tab management in Fey-Gate to make content easier copy+pasteable
-    |-- Tab One ---
-    |
-    | This should be the content of the __first tab__.
-    |
-    |-- Tab Two ---
-    |
-    | And this is the content of the __second tab__.
-    |
-    |---
--|-
-
-## Grids
-Grids are back too and more flexible than ever! And you can use actual HTML now.
-:::grid-1-2-3-4-5
-<div className="green">A</div>
-<div className="green">B</div>
-<div className="green">C</div>
-<div className="green">D</div>
-<div className="green">E</div>
-:::
-`;
-
-const Main = ({code}) => {
+const Main: React.FC<Props> = ({code}) => {
     const [data, setData] = useState({});
 
     return <Viewer
         content={code}
         data={data}
         onChange={(d) => setData(d)}
-        onDiceRoll={(d) => alert(d.result.output)}
+        onDiceRoll={(d:DiceRollResult) => alert(d.result.output)}
+        resolveImport={(path) => importables[path] }
     />;
 };
 

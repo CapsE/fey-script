@@ -6,7 +6,7 @@ import {Await} from "./Await.js";
 import {renderMDX} from "../util/renderMDX.js";
 
 export function TabView({ tabs, key }) {
-    const {data, onChange, onDiceRoll, eventTarget} = useContext(Context);
+    const {data, onChange, onDiceRoll, eventTarget, resolveImport} = useContext(Context);
     const [active, setActive] = useState(eventTarget.activeTabs[key] || 0);
 
     const onSwitchActive = (i) => {
@@ -28,7 +28,7 @@ export function TabView({ tabs, key }) {
                 ))}
             </div>
             <div className={styles.tabContent}>
-                <Await promise={renderMDX(tabs[active].content, data)} />
+                <Await promise={renderMDX(tabs[active].content, data, resolveImport)} />
             </div>
         </div>
     );

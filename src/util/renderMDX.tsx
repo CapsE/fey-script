@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import yaml from "yaml";
 import {Select} from "../components/select.tsx";
 import {Grid} from "../components/grid.tsx";
+import {PopoverLink} from "../components/popoverLink.tsx";
 
 // -- Types --
 
@@ -66,7 +67,8 @@ const types = {
     Columns,
     TabView,
     Select,
-    Grid
+    Grid,
+    HoverLink: PopoverLink
 };
 
 // -- JSX Data Storage --
@@ -125,10 +127,6 @@ const inputReplacer = makeReplacer({
             }
         }
 
-        const start = match.index;
-        const end = start + match[0].length;
-
-        obj.key = `${start}-${end}`;
         obj.type = obj.type || "number";
 
         jsxData.push(obj);
@@ -136,7 +134,7 @@ const inputReplacer = makeReplacer({
 });
 
 const diceReplacer = makeReplacer({
-    regex: /((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+|([+\-]{1,2}\d+)/g,
+    regex: /(?<![\w\/])((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+(?![\w\/])|(?<![\w\/])([+\-]{1,2}\d+)(?![\w\/])/g,
     getReplacement: (match) => {
         jsxData.push({ value: match[0] });
         return `<Wrapper type="Rollable" id="${jsxData.length - 1}" />`;
@@ -204,6 +202,22 @@ const selectReplacer = (str: string, context: Record<string, any>): string =>
         }
     })(str);
 
+const popoverLinkReplacer = (str: string, context: Record<string, any>, resolveImports): string =>
+    makeReplacer({
+        regex: /\[([\s\S]+)\]\(>([^)]+)\)/g,
+        getReplacement: (match) => {
+            const path = match[2];
+            console.log(path);
+
+            const markdown = resolveImports(path.trim());
+            jsxData.push({
+                markdown: markdown,
+                text: match[1],
+            });
+            return `<Wrapper type="HoverLink" id="${jsxData.length - 1}" />`;
+        }
+    })(str);
+
 
 
 const evalReplacer = (str: string, context: Record<string, any>): string =>
@@ -227,17 +241,16 @@ const Wrapper: React.FC<WrapperProps> = ({ type, id }) => {
     return <Component {...jsxData[id]} />;
 };
 
-function flattenIndentedString(str) {
+function flattenIndentedString(str: string): string {
     return str
         .split('\n')
-        .map((line) => line.trim()) // remove leading/trailing spaces from each line
-        .filter((line) => line.length > 0) // remove empty lines
-        .join('\n'); // join into a single line with spaces
+        .map((line) => line.replace(/^\s+/, '')) // remove only leading whitespace
+        .join('\n'); // preserve empty lines
 }
 
 // -- Render Function --
 
-export function renderMDX(mdx: string, context: Record<string, any>): Promise<ReactNode> {
+export function renderMDX(mdx: string, context: Record<string, any>, resolveImports: (path: string) => string): Promise<ReactNode> {
     return new Promise((resolve) => {
         const regex = /^---\n([\s\S]*?)\n---/g;
         const match = regex.exec(mdx);
@@ -261,12 +274,32 @@ export function renderMDX(mdx: string, context: Record<string, any>): Promise<Re
             }
         }
 
-        const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
-        mdx = mdx.replace(ifRegex, (match, varName, content) => {
-            const value = safeEval(varName, context);
+        let loopCount = 0;
+        const maxLoopCount = 100;
 
-            return value ? content : '';
-        });
+        const importRegex = /\{\{>(.*?)\}\}/gm;
+        const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
+
+        while(importRegex.test(mdx) || ifRegex.test(mdx)) {
+            mdx = mdx.replace(ifRegex, (match, varName, content) => {
+                const value = safeEval(varName, context);
+
+                return value ? content : '';
+            });
+
+
+            mdx = mdx.replace(importRegex, (match, path) => {
+                const replaced = resolveImports(path.trim());
+                return replaced || '';
+            });
+
+            loopCount++;
+            if(loopCount === maxLoopCount) {
+                mdx = `# Import Chain to deep
+                Do you have a circle import of multiple files importing each other?`
+            }
+        }
+
 
         mdx = flattenIndentedString(mdx);
         mdx = evalReplacer(mdx, context);
@@ -276,6 +309,7 @@ export function renderMDX(mdx: string, context: Record<string, any>): Promise<Re
         mdx = columnReplacer(mdx, context);
         mdx = tabReplacer(mdx);
         mdx = selectReplacer(mdx, context);
+        mdx = popoverLinkReplacer(mdx, context, resolveImports);
 
         evaluate(mdx, {
             ...runtime,
