@@ -1,8 +1,14 @@
 import {StrictMode, useState} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
-import {DiceRollResult, Viewer} from "./index";
+import {Viewer} from "./index";
 import code from './test-data.md?raw';
+
+type DiceRollResult = {
+  result: {
+    output: string;
+  };
+};
 
 const rootElement: HTMLElement | null = document.getElementById('root');
 

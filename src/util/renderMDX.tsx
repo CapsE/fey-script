@@ -1,15 +1,16 @@
 import { evaluate } from "@mdx-js/mdx";
 import * as runtime from "react/jsx-runtime";
 import { Input } from "../components/input";
-import { Rollable } from "../components/Rollable.jsx";
-import {TabView} from "../components/TabView.jsx";
-import React, {ReactNode, useEffect, useState} from "react";
+import { Rollable } from "../components/Rollable.tsx";
+import {TabView} from "../components/TabView.tsx";
+import React, {ReactNode} from "react";
 import {Await} from "../components/Await.tsx";
 import remarkGfm from "remark-gfm";
 import yaml from "yaml";
 import {Select} from "../components/select.tsx";
 import {Grid} from "../components/grid.tsx";
 import {PopoverLink} from "../components/popoverLink.tsx";
+import Columns from "../components/Columns.tsx";
 
 // -- Types --
 
@@ -25,9 +26,12 @@ type RollableProps = {
     value: string;
 };
 
-type WrapperProps = {
+type JSXData = any;
+
+export type WrapperProps = {
     type: keyof typeof types;
     id: number;
+    data?: JSXData;
 };
 
 type ReplacerArgs = {
@@ -47,7 +51,7 @@ function replaceRange(str: string, x: number, y: number, replacement: string): s
 }
 
 export function safeEval(code: string, context: Record<string, any>): any {
-    context.$mod = (v) => Math.floor((v - 10) / 2) < 0 ? Math.floor((v - 10) / 2) : '+' + Math.floor((v - 10) / 2);
+    context.$mod = (v: number) => Math.floor((v - 10) / 2) < 0 ? Math.floor((v - 10) / 2) : '+' + Math.floor((v - 10) / 2);
     const keys = Object.keys(context);
     const values = Object.values(context);
     return Function(...keys, `"use strict"; return (${code})`)(...values);
@@ -55,11 +59,7 @@ export function safeEval(code: string, context: Record<string, any>): any {
 
 // -- Components Map --
 
-const Columns: React.FC<WrapperProps> = ({ value, context }) => {
-    return <div style={{columnCount: 2}}>
-        <Await promise={renderMDX(value, context)} />
-    </div>
-};
+
 
 const types = {
     Input,
@@ -68,12 +68,12 @@ const types = {
     TabView,
     Select,
     Grid,
-    HoverLink: PopoverLink
+    HoverLink: PopoverLink,
 };
 
 // -- JSX Data Storage --
 
-const jsxData: (InputProps | RollableProps)[] = [];
+const jsxData: JSXData[] = [];
 
 // -- General Replacer Generator --
 
@@ -109,7 +109,7 @@ const inputReplacer = makeReplacer({
     getReplacement: (_match, _index) => `<Wrapper type="Input" id="${jsxData.length}" />`,
     onMatch: (match) => {
         const [name, data] = match[1].split("|");
-        let obj: InputProps = { name };
+        let obj: InputProps = { name, value: "", key: name };
 
         if (/\[\d+\/\d+/.test(data)) {
             obj.value = data.split('/')[0].slice(1);
@@ -150,11 +150,11 @@ const columnReplacer = (str: string, context: Record<string, any>): string =>
         }
     })(str);
 
-const gridReplacer = (str: string, context: Record<string, any>): string =>
+const gridReplacer = (str: string, context: Record<string, any>, resolveImports: (path: string) => string): string =>
     makeReplacer({
         regex:  /:::grid-(\d(-\d)*)?\n([\s\S]*?)\n:::/g,
         getReplacement: (match) => {
-            jsxData.push({ cols: match[1], content: match[3], context });
+            jsxData.push({ cols: match[1], content: match[3], context, resolveImports });
             return `<Wrapper type="Grid" id="${jsxData.length - 1}" />`;
         }
     })(str);
@@ -165,14 +165,13 @@ const tabReplacer = (str: string): string =>
         getReplacement: (match) => {
             const tabsCode = match[1].split(/(?:^|\n)\|-- (.+?) ---/);
             const tabs = [];
-            for(let i = 1; i < tabsCode.length; i += 2) {
+            for (let i = 1; i < tabsCode.length; i += 2) {
                 tabs.push({
                     title: tabsCode[i],
                     content: tabsCode[i + 1].replace(/\n\|/g, '\n').replace(/\n---/g, '').trim(),
                 });
             }
             jsxData.push({ tabs });
-
             return `<Wrapper type="TabView" id="${jsxData.length - 1}" />`;
         }
     })(str);
@@ -182,7 +181,7 @@ const selectReplacer = (str: string, context: Record<string, any>): string =>
         regex: /s\[(\S+)\]\[(\n\S+)+\n\]/g,
         getReplacement: (match) => {
             const [name, json] = match[1].split(";");
-            let obj: InputProps = { name };
+            let obj: InputProps = { name, value: "", key: name, type: "select" };
 
             if (json) {
                 try {
@@ -202,7 +201,7 @@ const selectReplacer = (str: string, context: Record<string, any>): string =>
         }
     })(str);
 
-const popoverLinkReplacer = (str: string, context: Record<string, any>, resolveImports): string =>
+const popoverLinkReplacer = (str: string, context: Record<string, any>, resolveImports: (path: string) => string ): string =>
     makeReplacer({
         regex: /\[([\s\S]+)\]\(>([^)]+)\)/g,
         getReplacement: (match) => {
@@ -238,7 +237,8 @@ const evalReplacer = (str: string, context: Record<string, any>): string =>
 
 const Wrapper: React.FC<WrapperProps> = ({ type, id }) => {
     const Component = types[type];
-    return <Component {...jsxData[id]} />;
+    const data = jsxData[id];
+    return <Component {...data} />;
 };
 
 function flattenIndentedString(str: string): string {
@@ -250,7 +250,11 @@ function flattenIndentedString(str: string): string {
 
 // -- Render Function --
 
-export function renderMDX(mdx: string, context: Record<string, any>, resolveImports: (path: string) => string): Promise<ReactNode> {
+export function renderMDX(
+    mdx: string,
+    context: Record<string, any>,
+    resolveImports: (path: string) => string
+): Promise<ReactNode> {
     return new Promise((resolve) => {
         const regex = /^---\n([\s\S]*?)\n---/g;
         const match = regex.exec(mdx);
@@ -303,7 +307,7 @@ export function renderMDX(mdx: string, context: Record<string, any>, resolveImpo
 
         mdx = flattenIndentedString(mdx);
         mdx = evalReplacer(mdx, context);
-        mdx = gridReplacer(mdx, context);
+        mdx = gridReplacer(mdx, context, resolveImports); // Pass resolveImports here
         mdx = diceReplacer(mdx);
         mdx = inputReplacer(mdx);
         mdx = columnReplacer(mdx, context);
