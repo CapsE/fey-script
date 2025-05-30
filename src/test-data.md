@@ -24,6 +24,8 @@ Inputs come in new shapes now:
     ]
 :::
 
+And you can use their values in your document: {{numbers}} {{numbersWithMaxValue}} {{numberOfCheckboxes}} {{selects}}
+
 ## Conditional Rendering
 Depending on set inputs values parts of your document can be hidden or shown
 

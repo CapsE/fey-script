@@ -14,7 +14,7 @@ import Columns from "../components/Columns.tsx";
 
 // -- Types --
 
-type InputProps = {
+export type InputProps = {
     name: string;
     value: string;
     key: string;

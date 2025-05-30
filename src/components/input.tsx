@@ -1,26 +1,30 @@
+import React, {ChangeEvent} from 'react';
 import {toNiceName} from '../util/toNiceName.js';
 import PropTypes from 'prop-types';
-import {useContext, useEffect, useState} from 'react';
-import {Context} from "../Context.js";
+import {useContext, useState} from 'react';
+import {Context} from "../Context";
 import styles from './input.module.css';
+import {InputProps} from "../util/renderMDX.tsx";
 
-export const Input = ({name, label, type, value, id, ...other}) => {
+export const Input: React.FC<InputProps> = ({name, label, type, value, id, ...other}) => {
     const {data, onChange, eventTarget} = useContext(Context);
-    let innerValueInitial = '';
 
-    if (data[name] || data[name] === 0) {
-        innerValueInitial = data[name];
-    } else if (value) {
-        innerValueInitial = value;
+    // Determine initial value type
+    let innerValueInitial: string | number = '';
+    if (data[name] !== undefined) {
+        innerValueInitial = type === 'number' ? Number(data[name]) : String(data[name]);
+    } else if (value !== undefined) {
+        innerValueInitial = type === 'number' ? Number(value) : String(value);
     }
-    const [innerValue, setInnerValue] = useState(innerValueInitial);
 
-    const changeHandler = (e) => {
+    const [innerValue, setInnerValue] = useState<string | number>(innerValueInitial);
+
+    const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         if (type === 'number') {
-            const v = parseInt(e.target.value);
-            if (isNaN(v)) {
+            const v = e.target.value === '' ? '' : Number(e.target.value);
+            if (v === '' || isNaN(v)) {
                 setInnerValue('');
-            } else if (v > other.max) {
+            } else if (other.max !== undefined && v > other.max) {
                 setInnerValue(other.max);
             } else {
                 setInnerValue(v);
@@ -30,25 +34,25 @@ export const Input = ({name, label, type, value, id, ...other}) => {
         }
     };
 
-    const blurHandler = (e) => {
+    const blurHandler = () => {
         eventTarget.focusedElement = null;
-        setTimeout(() => {
-            onChange({
-                ...data,
-                [name]: innerValue
-            });
-        }, 0);
+        onChange({
+            ...data,
+            [name]: type === 'number'
+                ? (innerValue === '' ? '' : Number(innerValue))
+                : innerValue
+        });
     }
 
     const elements = [];
-    if(type === 'checkmarks') {
+    if (type === 'checkmarks') {
         for (let i = 0; i < other.max; i++) {
             elements.push(<input
                 key={`checkmarks-${i}`}
                 type="checkbox"
-                checked={i < innerValue}
+                checked={i < Number(innerValue)}
                 onChange={(e) => {
-                    let v = e.target.checked ? parseInt(innerValue) + 1 : parseInt(innerValue) - 1;
+                    let v = e.target.checked ? Number(innerValue) + 1 : Number(innerValue) - 1;
                     setInnerValue(v);
                     eventTarget.focusedElement = null;
                     onChange({
@@ -61,19 +65,19 @@ export const Input = ({name, label, type, value, id, ...other}) => {
     }
 
     return <div className={styles.input}>
-        <label>{label ? label : toNiceName(name)}</label>
+        <label htmlFor={name + '_' + id}>{label ? label : toNiceName(name)}</label>
         {type === 'checkmarks' ? <div className={styles.checkmarks}>
                 {elements}
             </div>
-            :<input
-            id={name + '_' + id}
-            onChange={changeHandler}
-            onBlur={blurHandler}
-            onFocus={() => eventTarget.focusedElement = name + '_' + id}
-            type={type ? type : 'text'}
-            value={innerValue}
-            {...other}
-        />}
+            : <input
+                id={name + '_' + id}
+                onChange={changeHandler}
+                onBlur={blurHandler}
+                onFocus={() => eventTarget.focusedElement = name + '_' + id}
+                type={type ? type : 'text'}
+                value={innerValue === undefined ? '' : String(innerValue)}
+                {...other}
+            />}
         {other.max && type !== 'checkmarks' ? <div className={styles.maxDisplay}>/{other.max}</div> : null}
     </div>;
 };
