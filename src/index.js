@@ -1,1 +1,1 @@
-export {Viewer} from './markdown/Viewer.jsx'
+export {Viewer} from './Viewer.jsx'

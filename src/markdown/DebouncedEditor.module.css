@@ -1,7 +1,0 @@
-.toolbar {
-    display: flex;
-    gap: 5px;
-    position: sticky;
-    bottom: 0;
-    background: var(--bg-light);
-}

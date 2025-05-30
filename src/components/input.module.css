@@ -1,0 +1,32 @@
+.input {
+    --background: white;
+    --color: black;
+    --font-size: 0.75rem;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+
+    input {
+        color: var(--color);
+        width: 100%;
+        background-color: var(--background);
+        font-size: var(--font-size);
+    }
+
+    .checkmarks {
+        display: flex;
+    }
+
+    .maxDisplay {
+        position: absolute;
+        right: 0;
+        bottom: 4px;
+        background-color: var(--background);
+        color: var(--color);
+        font-size: var(--font-size);
+        font-weight: bold;
+        line-height: 1;
+    }
+}
+
+

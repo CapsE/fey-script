@@ -15,6 +15,11 @@
 
 #root {
   width: 100%;
-  height: calc(100vh - 35px);
+  max-width: 1200px;
+  margin: 1rem auto;
   background-color: var(--background);
+}
+
+a {
+  color: teal;
 }
