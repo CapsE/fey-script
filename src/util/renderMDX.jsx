@@ -227,8 +227,55 @@ function flattenIndentedString(str) {
         .join("\n") // preserve empty lines
 }
 
-// -- Render Function --
+function parseIfBlocks(input) {
+    const lines = input.split('\n');
+    const stack = [];
+    const root = { type: 'root', children: [] };
+    let current = root;
 
+    for (const line of lines) {
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith(':::if ')) {
+            const condition = trimmed.slice(6).trim();
+            const node = { type: 'if', condition, children: [] };
+            current.children.push(node);
+            stack.push(current);
+            current = node;
+        } else if (trimmed === ':::' && current.type === 'if') {
+            current = stack.pop();
+        } else {
+            current.children.push({ type: 'text', value: line });
+        }
+    }
+
+    return root;
+}
+
+function renderTree(node, context) {
+    if (node.type === 'if') {
+        let result = null;
+        try {
+            result = safeEval(node.condition, context);
+        } catch (e) {
+            console.log(e);
+        }
+
+        return result ? node.children.map(child => renderTree(child, context)).join('') : '';
+    }
+
+    if (node.type === 'root') {
+        return node.children.map(child => renderTree(child, context)).join('');
+    }
+
+    if (node.type === 'text') {
+        return node.value + '\n';
+    }
+
+    return '';
+}
+
+// -- Render Function --
 export function renderMDX(mdx, context, resolveImports) {
     return new Promise(resolve => {
         const regex = /^---\n([\s\S]*?)\n---/g
@@ -257,15 +304,7 @@ export function renderMDX(mdx, context, resolveImports) {
         const maxLoopCount = 100
 
         const importRegex = /\{\{>(.*?)\}\}/gm
-        const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm
-
-        while (importRegex.test(mdx) || ifRegex.test(mdx)) {
-            mdx = mdx.replace(ifRegex, (match, varName, content) => {
-                const value = safeEval(varName, context)
-
-                return value ? content : ""
-            })
-
+        while (importRegex.test(mdx)) {
             mdx = mdx.replace(importRegex, (match, path) => {
                 const replaced = resolveImports(path.trim())
                 return replaced || ""
@@ -277,6 +316,10 @@ export function renderMDX(mdx, context, resolveImports) {
                 Do you have a circle import of multiple files importing each other?`
             }
         }
+
+        const tree = parseIfBlocks(mdx);
+        console.log(tree);
+        mdx = renderTree(tree, context);
 
         mdx = flattenIndentedString(mdx)
         mdx = evalReplacer(mdx, context)

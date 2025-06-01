@@ -32,6 +32,12 @@ Depending on set inputs values parts of your document can be hidden or shown
 :::if selects === "Mage"
     ## Mage
     Mages are very powerful spell casters
+
+    :::if numbers > 20
+        ## Numbers
+        The number is greater than 20
+
+    :::
 :::
 :::if selects === "Rogue"
     ## Rogue
@@ -47,27 +53,28 @@ Depending on set inputs values parts of your document can be hidden or shown
 -|-
     It's possible to let parts of your document flow in two columns. This works not only for text but for all elements.
     As you can see tables are supported too. There is also a helper function making it easier to calculate DnD5e's modifiers
-
-    #### DnD Stats
-    |                |        |        |        |        |        |
-    |----------------|--------|--------|--------|--------|--------|
-    | i[str]         | i[dex]        | i[con]        | i[int]        | i[wis]        | i[cha]        |
-    | {{$mod(str)}}  | {{$mod(dex)}} | {{$mod(con)}} | {{$mod(int)}} | {{$mod(wis)}} | {{$mod(cha)}} |
-
-    
-    ## Tabs
-    This new addition allows it to group and filter information on the fly. This will likely be used to
-    replace the current tab management in Fey-Gate to make content easier copy+pasteable
-    |-- Tab One ---
-    |
-    | This should be the content of the __first tab__.
-    |
-    |-- Tab Two ---
-    |
-    | And this is the content of the __second tab__.
-    |
-    |---
 -|-
+
+#### DnD Stats
+|                |        |        |        |        |        |
+|----------------|--------|--------|--------|--------|--------|
+| i[str]         | i[dex]        | i[con]        | i[int]        | i[wis]        | i[cha]        |
+| {{$mod(str)}}  | {{$mod(dex)}} | {{$mod(con)}} | {{$mod(int)}} | {{$mod(wis)}} | {{$mod(cha)}} |
+
+
+## Tabs
+This new addition allows it to group and filter information on the fly. This will likely be used to
+replace the current tab management in Fey-Gate to make content easier copy+pasteable
+|-- Tab One ---
+|
+| This should be the content of the __first tab__.
+|
+|-- Tab Two ---
+|
+| And this is the content of the __second tab__.
+|
+|---
+
 
 ## Grids
 Grids are back too and more flexible than ever! And you can use actual HTML now.
