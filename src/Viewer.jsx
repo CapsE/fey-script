@@ -40,35 +40,6 @@ export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll,
     const diceRollHandler = (notation) => {
         onDiceRoll && onDiceRoll(rollDice(notation));
     }
-
-    const regex = /^---\n([\s\S]*?)\n---/g;
-    const match = regex.exec(content);
-    let frontMatterData = {};
-
-    // Get content after match
-    if (match) {
-        try {
-            frontMatterData = yaml.parse(match[1]);
-        } catch (err) {
-            console.log(err);
-        }
-
-        content = content.replace(match[0], '');
-    }
-
-    if(frontMatterData) {
-        data = {
-            ...frontMatterData,
-            ...data,
-        }
-    }
-
-    const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
-    content = content.replace(ifRegex, (match, varName, content) => {
-        const value = safeEval(varName, data);
-
-        return value ? content : '';
-    });
     const SourceExtract = ({node, children}) => {
         const source = content.substring(node.position.start.offset, node.position.end.offset);
         return <Shareable toShare={source}>

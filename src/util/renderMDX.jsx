@@ -228,6 +228,7 @@ function flattenIndentedString(str) {
 }
 
 function parseIfBlocks(input) {
+    console.log(input);
     const lines = input.split('\n');
     const stack = [];
     const root = { type: 'root', children: [] };
