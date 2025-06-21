@@ -9,7 +9,8 @@ const rootElement = document.getElementById("root")
 const importables = {
     "spells/magehand": `
         #### Mage Hand
-
+        ![magehand](/hand.png)
+        
         *Conjuration cantrip*
         
         **Casting Time:** 1 action
@@ -29,7 +30,8 @@ const importables = {
     `,
     "spells/fireball": `
         #### Fireball
-
+        ![fireball](/fireball.png)
+        
         *3rd-level evocation*
         
         **Casting Time:** 1 action

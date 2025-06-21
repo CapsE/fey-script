@@ -79,15 +79,19 @@ Grids are back too and more flexible than ever! And you can use actual HTML now.
     <div className="green">E</div>
 :::
 
+## How about a nice image?
+
+
+
 ## Imports
 Import things either directly into your code:
 {{> spells/magehand}}
 
 Or as link with a popup. [Fireball](> spells/fireball)
 
+Or as a card. 
+:::grid-5
+[[> spells/fireball ]] [[> spells/magehand ]]
+:::
 Links do work too. Click [here](https://raw.githubusercontent.com/BTMorton/dnd-5e-srd/refs/heads/master/markdown/08%20spellcasting.md)
 Will -5 still work?
-
-How about a nice image?
-
-![image](https://picsum.photos/200/300)

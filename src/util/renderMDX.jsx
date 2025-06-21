@@ -10,6 +10,7 @@ import { Select } from "../components/select.jsx"
 import { Grid } from "../components/grid.jsx"
 import { PopoverLink } from "../components/popoverLink.jsx"
 import Columns from "../components/Columns.jsx"
+import {Card} from "../components/Card.jsx"
 
 // -- Context --
 
@@ -40,7 +41,8 @@ const types = {
     TabView,
     Select,
     Grid,
-    HoverLink: PopoverLink
+    HoverLink: PopoverLink,
+    Card
 }
 
 // -- JSX Data Storage --
@@ -184,10 +186,9 @@ const selectReplacer = (str, context) =>
 
 const popoverLinkReplacer = (str, context, resolveImports) =>
     makeReplacer({
-        regex: /\[([\s\S]+)\]\(>([^)]+)\)/g,
+        regex: /(?<!\!)\[([\s\S]+?)\]\(>([^)]+)\)/g,
         getReplacement: match => {
             const path = match[2]
-            console.log(path)
 
             const markdown = resolveImports(path.trim())
             jsxData.push({
@@ -195,6 +196,35 @@ const popoverLinkReplacer = (str, context, resolveImports) =>
                 text: match[1]
             })
             return `<Wrapper type="HoverLink" id="${jsxData.length - 1}" />`
+        }
+    })(str)
+
+const cardReplacer = (str, context, resolveImports) =>
+    makeReplacer({
+        regex: /\[\[>(.*?)\]\]/gm,
+        getReplacement: match => {
+            const path = match[1]
+
+            const markdown = resolveImports(path.trim());
+            const {frontMatterData} = extractFrontmatter(markdown);
+            const data = {
+                img: frontMatterData.img,
+                title: frontMatterData.title,
+                description: frontMatterData.description,
+                link: path
+            }
+            if(!data.img) {
+                const regex = /!\[.*?\]\((.*?)\)/;
+                const match = markdown.match(regex);
+                data.img =  match?.[1] || null;
+            }
+            if(!data.title) {
+                const regex = /(#{1,6})\s+(.*)/m;
+                const match = markdown.match(regex);
+                data.title = match?.[2] || null;
+            }
+            jsxData.push(data);
+            return `<Wrapper type="Card" id="${jsxData.length - 1}" />`
         }
     })(str)
 
@@ -227,24 +257,33 @@ function flattenIndentedString(str) {
         .join("\n") // preserve empty lines
 }
 
-// -- Render Function --
+function extractFrontmatter(mdx) {
+    const regex = /^---\n([\s\S]*?)\n---/g
+    const match = regex.exec(mdx)
+    let frontMatterData = {}
 
-export function renderMDX(mdx, context, resolveImports) {
-    return new Promise(resolve => {
-        const regex = /^---\n([\s\S]*?)\n---/g
-        const match = regex.exec(mdx)
-        let frontMatterData = {}
-
-        // Get content after match
-        if (match) {
-            try {
-                frontMatterData = yaml.parse(match[1])
-            } catch (err) {
-                console.log(err)
-            }
-
-            mdx = mdx.replace(match[0], "")
+    // Get content after match
+    if (match) {
+        try {
+            frontMatterData = yaml.parse(match[1])
+        } catch (err) {
+            console.log(err)
         }
+
+        mdx = mdx.replace(match[0], "")
+    }
+
+    return {
+        frontMatterData,
+        cleanMDX: mdx
+    }
+}
+// -- Render Function --
+export function renderMDX(mdx, context, resolveImports) {
+    return new Promise((resolve) => {
+        mdx = mdx.replace(/\r\n/g, '\n');
+        const {frontMatterData, cleanMDX} = extractFrontmatter(mdx);
+        mdx = cleanMDX;
 
         if (frontMatterData) {
             context = {
@@ -287,6 +326,7 @@ export function renderMDX(mdx, context, resolveImports) {
         mdx = tabReplacer(mdx)
         mdx = selectReplacer(mdx, context)
         mdx = popoverLinkReplacer(mdx, context, resolveImports)
+        mdx = cardReplacer(mdx, context, resolveImports)
 
         evaluate(mdx, {
             ...runtime,
