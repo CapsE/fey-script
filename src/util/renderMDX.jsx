@@ -29,7 +29,15 @@ export function safeEval(code, context) {
             : "+" + Math.floor((v - 10) / 2)
     const keys = Object.keys(context)
     const values = Object.values(context)
-    return Function(...keys, `"use strict"; return (${code})`)(...values)
+    let out;
+
+    try {
+        out = Function(...keys, `"use strict"; return (${code})`)(...values)
+    } catch (e) {
+        console.warn(e.message);
+        out = 'x';
+    }
+    return out;
 }
 
 // -- Components Map --
@@ -47,26 +55,34 @@ const types = {
 
 // -- JSX Data Storage --
 
-const jsxData = []
+const jsxData = {};
+
+function pushData(data) {
+    const key = crypto.randomUUID();
+    jsxData[key] = data;
+    return key;
+}
 
 // -- General Replacer Generator --
 
 function makeReplacer({ regex, getReplacement, onMatch }) {
-    return str => {
+    return async (str) => {
         const matches = []
         let m
         let index = 0
 
-        while ((m = regex.exec(str)) !== null) {
+        // Clone regex with same flags and reset lastIndex
+        const re = new RegExp(regex.source, regex.flags)
+
+        while ((m = re.exec(str)) !== null) {
             const start = m.index
             const end = start + m[0].length
-            const replacement = getReplacement(m, index)
+            const replacement = await getReplacement(m, index)
             if (onMatch) onMatch(m, index)
             matches.push({ match: m, start, end, replacement })
             index++
         }
 
-        // Replace in reverse to avoid shifting indexes
         for (let i = matches.length - 1; i >= 0; i--) {
             const { start, end, replacement } = matches[i]
             str = replaceRange(str, start, end, replacement)
@@ -76,14 +92,14 @@ function makeReplacer({ regex, getReplacement, onMatch }) {
     }
 }
 
+
 // -- Replacers --
 
 const inputReplacer = makeReplacer({
     regex: /i\[(.*?)\]\W/g,
-    getReplacement: (_match, _index) =>
-        `<Wrapper type="Input" id="${jsxData.length}" />`,
-    onMatch: match => {
-        const [name, data] = match[1].split("|")
+    getReplacement: async (match) => {
+        const [name, data] = match[1].split("|");
+        console.log(name);
         let obj = { name, value: "", key: name }
 
         if (/\[\d+\/\d+/.test(data)) {
@@ -104,45 +120,46 @@ const inputReplacer = makeReplacer({
 
         obj.type = obj.type || "number"
 
-        jsxData.push(obj)
+        const key = pushData(obj);
+        return `<Wrapper type="Input" id="${key}" />`
     }
 })
 
 const diceReplacer = makeReplacer({
     regex: /(?<![\w\/])((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+(?![\w\/])|(?<![\w\/])([+\-]{1,2}\d+)(?![\w\/])/g,
-    getReplacement: match => {
-        jsxData.push({ value: match[0] })
-        return `<Wrapper type="Rollable" id="${jsxData.length - 1}" />`
+    getReplacement: async (match) => {
+        const key = pushData({ value: match[0] });
+        return `<Wrapper type="Rollable" id="${key}" />`
     }
 })
 
 const columnReplacer = (str, context) =>
     makeReplacer({
         regex: /-\|-\n([\s\S]*?)\n-\|-/g,
-        getReplacement: match => {
-            jsxData.push({ value: match[1], context })
-            return `<Wrapper type="Columns" id="${jsxData.length - 1}" />`
+        getReplacement: async (match) => {
+            const key = pushData({ value: match[1], context });
+            return `<Wrapper type="Columns" id="${key}" />`
         }
     })(str)
 
 const gridReplacer = (str, context, resolveImports) =>
     makeReplacer({
         regex: /:::grid-(\d(-\d)*)?\n([\s\S]*?)\n:::/g,
-        getReplacement: match => {
-            jsxData.push({
+        getReplacement: async (match) => {
+            const key = pushData({
                 cols: match[1],
                 content: match[3],
                 context,
                 resolveImports
-            })
-            return `<Wrapper type="Grid" id="${jsxData.length - 1}" />`
+            });
+            return `<Wrapper type="Grid" id="${key}" />`
         }
     })(str)
 
 const tabReplacer = str =>
     makeReplacer({
         regex: /(\|-- .+? ---[\s\S]*?\|---)/g,
-        getReplacement: match => {
+        getReplacement: async (match) => {
             const tabsCode = match[1].split(/(?:^|\n)\|-- (.+?) ---/)
             const tabs = []
             for (let i = 1; i < tabsCode.length; i += 2) {
@@ -154,15 +171,15 @@ const tabReplacer = str =>
                         .trim()
                 })
             }
-            jsxData.push({ tabs })
-            return `<Wrapper type="TabView" id="${jsxData.length - 1}" />`
+            const key = pushData({ tabs });
+            return `<Wrapper type="TabView" id="${key}" />`
         }
     })(str)
 
-const selectReplacer = (str, context) =>
+const selectReplacer = (str) =>
     makeReplacer({
         regex: /s\[(\S+)\]\[(\n\S+)+\n\]/g,
-        getReplacement: match => {
+        getReplacement: async (match) => {
             const [name, json] = match[1].split(";")
             let obj = { name, value: "", key: name, type: "select" }
 
@@ -179,33 +196,33 @@ const selectReplacer = (str, context) =>
             options.shift()
             options.pop()
             obj.options = options
-            jsxData.push(obj)
-            return `<Wrapper type="Select" id="${jsxData.length - 1}" />`
+            const key = pushData(obj);
+            return `<Wrapper type="Select" id="${key}" />`
         }
     })(str)
 
 const popoverLinkReplacer = (str, context, resolveImports) =>
     makeReplacer({
         regex: /(?<!\!)\[([\s\S]+?)\]\(>([^)]+)\)/g,
-        getReplacement: match => {
+        getReplacement: async (match) => {
             const path = match[2]
 
-            const markdown = resolveImports(path.trim())
-            jsxData.push({
+            const markdown = await resolveImports(path.trim())
+            const key = pushData({
                 markdown: markdown,
                 text: match[1]
-            })
-            return `<Wrapper type="HoverLink" id="${jsxData.length - 1}" />`
+            });
+            return `<Wrapper type="HoverLink" id="${key}" />`
         }
     })(str)
 
 const cardReplacer = (str, context, resolveImports) =>
     makeReplacer({
         regex: /\[\[>(.*?)\]\]/gm,
-        getReplacement: match => {
+        getReplacement: async (match) => {
             const path = match[1]
 
-            const markdown = resolveImports(path.trim());
+            const markdown = await resolveImports(path.trim());
             const {frontMatterData} = extractFrontmatter(markdown);
             const data = {
                 img: frontMatterData.img,
@@ -224,14 +241,15 @@ const cardReplacer = (str, context, resolveImports) =>
                 data.title = match?.[2] || null;
             }
             jsxData.push(data);
-            return `<Wrapper type="Card" id="${jsxData.length - 1}" />`
+            const key = pushData(data);
+            return `<Wrapper type="Card" id="${key}" />`
         }
     })(str)
 
 const evalReplacer = (str, context) =>
     makeReplacer({
         regex: /\{\{(.*?)\}\}/g,
-        getReplacement: match => {
+        getReplacement: async (match) => {
             try {
                 const value = safeEval(match[1], context)
                 return value ?? "X"
@@ -279,68 +297,67 @@ function extractFrontmatter(mdx) {
     }
 }
 // -- Render Function --
-export function renderMDX(mdx, context, resolveImports) {
-    return new Promise((resolve) => {
-        mdx = mdx.replace(/\r\n/g, '\n');
-        const {frontMatterData, cleanMDX} = extractFrontmatter(mdx);
-        mdx = cleanMDX;
+export async function renderMDX(mdx, context, resolveImports) {
+    mdx = mdx.replace(/\r\n/g, '\n');
+    const {frontMatterData, cleanMDX} = extractFrontmatter(mdx);
+    mdx = cleanMDX;
 
-        if (frontMatterData) {
-            context = {
-                ...frontMatterData,
-                ...context
-            }
+    if (frontMatterData) {
+        context = {
+            ...frontMatterData,
+            ...context
         }
+    }
 
-        let loopCount = 0
-        const maxLoopCount = 100
+    let loopCount = 0
+    const maxLoopCount = 100
 
-        const importRegex = /\{\{>(.*?)\}\}/gm
-        const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm
+    const importRegex = /\{\{>(.*?)\}\}/gm
+    const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm
 
-        while (importRegex.test(mdx) || ifRegex.test(mdx)) {
-            mdx = mdx.replace(ifRegex, (match, varName, content) => {
-                const value = safeEval(varName, context)
+    while (importRegex.test(mdx) || ifRegex.test(mdx)) {
+        mdx = mdx.replace(ifRegex, (match, varName, content) => {
+            const value = safeEval(varName, context)
 
-                return value ? content : ""
-            })
-
-            mdx = mdx.replace(importRegex, (match, path) => {
-                const replaced = resolveImports(path.trim())
-                return replaced || ""
-            })
-
-            loopCount++
-            if (loopCount === maxLoopCount) {
-                mdx = `# Import Chain to deep
-                Do you have a circle import of multiple files importing each other?`
-            }
-        }
-
-        mdx = flattenIndentedString(mdx)
-        mdx = evalReplacer(mdx, context)
-        mdx = gridReplacer(mdx, context, resolveImports) // Pass resolveImports here
-        mdx = diceReplacer(mdx)
-        mdx = inputReplacer(mdx)
-        mdx = columnReplacer(mdx, context)
-        mdx = tabReplacer(mdx)
-        mdx = selectReplacer(mdx, context)
-        mdx = popoverLinkReplacer(mdx, context, resolveImports)
-        mdx = cardReplacer(mdx, context, resolveImports)
-
-        evaluate(mdx, {
-            ...runtime,
-            remarkPlugins: [remarkGfm]
-        }).then(({ default: MDXContent }) => {
-            resolve(
-                <DataContext.Provider value={jsxData}>
-                    {MDXContent({
-                        components: {
-                            Wrapper
-                        }
-                    })}
-                </DataContext.Provider>
-            )
+            return value ? content : ""
         })
-    })
+
+        const matches = [...mdx.matchAll(/\{\{>(.*?)\}\}/gm)];
+
+        for (const match of matches) {
+            const [fullMatch, path] = match;
+            const replaced = await resolveImports(path.trim());
+            mdx = mdx.replace(fullMatch, replaced || "");
+        }
+
+        loopCount++
+        if (loopCount === maxLoopCount) {
+            mdx = `# Import Chain to deep
+                Do you have a circle import of multiple files importing each other?`
+        }
+    }
+
+    mdx = flattenIndentedString(mdx)
+    mdx = await evalReplacer(mdx, context)
+    mdx = await gridReplacer(mdx, context, resolveImports) // Pass resolveImports here
+    mdx = await diceReplacer(mdx)
+    mdx = await inputReplacer(mdx)
+    mdx = await columnReplacer(mdx, context)
+    mdx = await tabReplacer(mdx)
+    mdx = await selectReplacer(mdx, context)
+    mdx = await popoverLinkReplacer(mdx, context, resolveImports)
+    mdx = await cardReplacer(mdx, context, resolveImports)
+
+    const { default: MDXContent } = await evaluate(mdx, {
+        ...runtime,
+        remarkPlugins: [remarkGfm]
+    });
+
+    return <DataContext.Provider value={jsxData}>
+        {MDXContent({
+            components: {
+                Wrapper
+            }
+        })}
+    </DataContext.Provider>
 }

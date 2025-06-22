@@ -59,7 +59,11 @@ const Main = ({ code }) => {
             data={data}
             onChange={d => setData(d)}
             onDiceRoll={d => alert(d.result.output)}
-            resolveImport={path => importables[path]}
+            resolveImport={(path) => {
+                return new Promise((resolve) => {
+                    resolve(importables[path]);
+                });
+            }}
         />
     )
 }

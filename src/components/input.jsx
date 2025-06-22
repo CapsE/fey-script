@@ -8,6 +8,10 @@ import styles from "./input.module.css"
 export const Input = ({ name, label, type, value, id, ...other }) => {
     const { data, onChange, eventTarget } = useContext(Context)
 
+    if(!name) {
+        return null;
+    }
+
     // Determine initial value type
     let innerValueInitial = ""
     if (data[name] !== undefined) {
@@ -71,6 +75,10 @@ export const Input = ({ name, label, type, value, id, ...other }) => {
         }
     }
 
+    console.log({
+        name,
+        other
+    });
     return (
         <div className={styles.input}>
             <label htmlFor={name + "_" + id}>

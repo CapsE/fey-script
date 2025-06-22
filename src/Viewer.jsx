@@ -63,19 +63,13 @@ export const Viewer = ({className, content, data, onChange, onClick, onDiceRoll,
         }
     }
 
-    const ifRegex = /^:::if ([^\n]+)\n([\s\S]+?)\n:::/gm;
-    content = content.replace(ifRegex, (match, varName, content) => {
-        const value = safeEval(varName, data);
-
-        return value ? content : '';
-    });
     const SourceExtract = ({node, children}) => {
         const source = content.substring(node.position.start.offset, node.position.end.offset);
         return <Shareable toShare={source}>
             {children}
         </Shareable>;
     };
-
+    console.log("Viewer Rendered");
     return <ErrorBoundary
             key={Date.now()}
             FallbackComponent={() => <div className="center">Invalid Stats</div>}
