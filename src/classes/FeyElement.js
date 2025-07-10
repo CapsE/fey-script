@@ -13,4 +13,11 @@ export class FeyElement extends HTMLElement {
             this.viewer = current;
         }
     }
+
+    replaceImages() {
+        this.innerHTML = this.innerHTML.replace(
+            /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi,
+            (_, src) => `<fey-image src="${src}"></fey-image>`
+        );
+    }
 }

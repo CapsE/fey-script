@@ -18,11 +18,6 @@
   flex-direction: column;
 }
 
-a,
-a:visited {
-  color: palegreen;
-}
-
 .card {
   border-radius: 20px;
   box-shadow: #000 2px 2px 12px;
@@ -32,14 +27,15 @@ a:visited {
   padding: 1rem;
   color: white;
   text-decoration: none;
+  max-height: 60vh;
+  overflow-y: auto;
 
-  img:first-child {
+  fey-image:first-child .crop {
     max-width: none;
     width: calc(100% + 2rem);
     border-radius: 20px  20px 0 0;
     margin-top: -2rem;
     margin-left: -1rem;
-    background-color: whitesmoke;
   }
 
   h1,h2,h3,h4,h5,h6 {
@@ -83,4 +79,15 @@ a:visited {
 
 .tab.active {
   display: block;
+}
+
+.crop {
+  overflow: hidden;
+}
+
+.crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }

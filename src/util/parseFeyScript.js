@@ -29,6 +29,7 @@ Do you have a circular import of multiple files importing each other?`;
 
 export async function parseFeyScript(code, resolveImports = async (path) => '') {
     code = code.replaceAll('\r', '\n');
+    code = code.replaceAll('&amp;', '&');
     code = await scanForImports(code, resolveImports, 0);
 
     code = code.replaceAll(/:::if ([^\n]+)\n([\s\S]+?)\n:::/gm, (match, condition, inner) => {
