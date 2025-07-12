@@ -31,13 +31,13 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
     const codeBlocks = [];
     code = code.replaceAll('\r', '\n');
     code = code.replaceAll('&amp;', '&');
-    code = await scanForImports(code, resolveImports, 0);
-
     code = code.replaceAll(/```([\S]+)*\n([\s\S]+?)\n\s*```/gm, (match, type, inner) => {
         codeBlocks.push(normalizeIndentation(inner));
         console.log(codeBlocks);
         return '```\n\n\n```'
     })
+
+    code = await scanForImports(code, resolveImports, 0);
 
     code = flattenIndentedString(code);
 
@@ -139,7 +139,7 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
 
     code = code.replaceAll(/\`\`\`\n\n\n\`\`\`/gm, (match, condition, inner) => {
         console.log("replacing");
-        return `\`\`\`\n${codeBlocks.pop()}\n\`\`\``;
+        return `\`\`\`\n${codeBlocks.shift()}\n\`\`\``;
     });
 
     return code;
