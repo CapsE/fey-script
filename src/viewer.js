@@ -50,8 +50,7 @@ export class FeyViewer extends HTMLElement {
             data = {};
         }
 
-        const content = flattenIndentedString(this.innerHTML).replaceAll('&gt;', '>').replaceAll('&lt;', '<');
-
+        const content = this.innerHTML.replaceAll('&gt;', '>').replaceAll('&lt;', '<');
         const {cleanMDX, frontMatterData} = extractFrontmatter(content);
         this.setData({
             ...frontMatterData,
@@ -69,7 +68,7 @@ export class FeyViewer extends HTMLElement {
     async setContent(content) {
         this.content = content;
         this.watchers = {};
-        const feyScript = await parseFeyScript(flattenIndentedString(this.content), this.resolveImports);
+        const feyScript = await parseFeyScript(this.content, this.resolveImports);
         this.innerHTML = `<style>${styles}</style>${marked.parse(feyScript).replace(
             /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi,
             (_, src) => `<fey-image src="${src}"></fey-image>`

@@ -29,7 +29,6 @@ export class FeyImage extends FeyElement {
         this.width = obj.width;
         this.height = obj.height;
         this.focus = obj.focus || 'center';
-        console.log(obj);
         this.render();
     }
 

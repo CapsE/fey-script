@@ -27,7 +27,6 @@ export class FeyTabs extends FeyElement {
     }
 
     update(active) {
-        console.log(this.tabs);
         this.active = active;
         this.buttons.forEach((btn) => btn.classList.remove('active'));
         this.tabs.forEach((tab) => tab.classList.remove('active'));

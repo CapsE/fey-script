@@ -1,5 +1,5 @@
 import {extractFrontmatter} from "./extractFrontmatter.js";
-import {flattenIndentedString, oneLineString} from "./flattenIndentString.js";
+import {flattenIndentedString, normalizeIndentation, oneLineString} from "./flattenIndentString.js";
 
 const maxLoopCount = 100;
 async function scanForImports(code, resolveImports, count) {
@@ -28,9 +28,18 @@ Do you have a circular import of multiple files importing each other?`;
 }
 
 export async function parseFeyScript(code, resolveImports = async (path) => '') {
+    const codeBlocks = [];
     code = code.replaceAll('\r', '\n');
     code = code.replaceAll('&amp;', '&');
     code = await scanForImports(code, resolveImports, 0);
+
+    code = code.replaceAll(/```([\S]+)*\n([\s\S]+?)\n\s*```/gm, (match, type, inner) => {
+        codeBlocks.push(normalizeIndentation(inner));
+        console.log(codeBlocks);
+        return '```\n\n\n```'
+    })
+
+    code = flattenIndentedString(code);
 
     code = code.replaceAll(/:::if ([^\n]+)\n([\s\S]+?)\n:::/gm, (match, condition, inner) => {
         return `\n<fey-if expression="${condition.replaceAll('"', `'`)}">\n${inner}\n</fey-if>\n`
@@ -126,6 +135,11 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
 
     code = code.replaceAll(/(?<![\w\/])((\d+)?d(\d+)(?:k[lh]?\d+)?([+\-*\/]\d+)?[+\-]*)+(?![\w\/])|(?<![\w\/])([+\-]{1,2}\d+)(?![\w\/])/g, (match, inner) => {
         return `<fey-rollable notation="${match}"></fey-rollable>`
+    });
+
+    code = code.replaceAll(/\`\`\`\n\n\n\`\`\`/gm, (match, condition, inner) => {
+        console.log("replacing");
+        return `\`\`\`\n${codeBlocks.pop()}\n\`\`\``;
     });
 
     return code;
