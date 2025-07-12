@@ -14,8 +14,8 @@
 
       <fey-viewer id="viewer">
         ---
+        info: Use "front-matter" to supply initial data to your document
         name: Nira
-        profession: Monk
         str: 10
         dex: 15
         con: 8
@@ -23,13 +23,62 @@
         wis: 14
         cha: 12
         ---
-        # Hello World
-        How are you doing? Would you like to roll a +5 or mabye 2d6+2?
+        # Fey-Script
+        Fey-Script is a superset of the markdown syntax that enhances it by adding interactive elements, import and export logic,
+        structual elements to handle document flow and much more.
+
+        ## Markdown
+        Use the well known markdown syntax to style your text, add tables and images and much more.
+
+        ## Structual Elements
+        You can wrap your markdown syntax in different containers to change how they are displayed.
+
+        ### Row
+        The row will display contained elements next to each other with a bit of spacing and break automatically
+        into the next row if no more space is available.
 
         :::row
-        [[> fireball.yml ]]
-        [[> fireball.yml ]]
+        [[
+          ### First Card
+          This card contains some test text.
+        ]]
+        [[
+          ### Second Card
+          This card contains some test text.
+        ]]
         :::
+
+        ### Grid
+        Using the grid container you can define columns with relative sizes. In this example a grid of 1-2-1 is used
+        which means the center column is twice as wide as the outer ones. You can use as many columns as you like so
+        1-1-1-1-1-1-1 would give you seven columns of equal size.
+
+        :::grid-1-2-1
+        <div style="background-color: darkcyan; padding: 1rem">
+
+        </div>
+        <div style="background-color: darkblue; padding: 1rem">
+
+        </div>
+        <div style="background-color: darkmagenta; padding: 1rem">
+
+        </div>
+        :::
+
+        ## Interactive Elements
+        You can use inputs and variables to control the rendering of your document. Using double curly brackets
+        you can output any value within the document.
+
+        __Name:__ {{name}}
+
+        ### Inputs
+        Inputs are defined by writing "i" followed by a variable name in square brackets. They allow you to edit
+        variables on the fly and the document will react to the changes.
+
+        i[name|{"type":"text"}]
+
+        ### Selects
+        Selects work just like inputs but give the user a list of available values to choose from instead
 
         s[className][
         Warrior
@@ -37,105 +86,81 @@
         Mage
         ]
 
-        Selected class is {{className}}
+        ### Conditional Block
+        It's possible to wrap parts of your document in a conditional if block. The wrapped content will only be shown
+        when the condition is met.
 
-        #### DnD Stats
-        |                |        |        |        |        |        |
-        |----------------|--------|--------|--------|--------|--------|
+        :::if className === "Warrior"
+        You choose the Warrior class. You are strong and know how to fight.
+        :::
+
+        :::if className === "Rogue"
+        You choose the Rogue class. You are sneaky and know how to get out of sticky situations.
+        :::
+
+        :::if className === "Mage"
+        You choose the Mage class. You are intelligent and know how to cast magic
+        :::
+
+        ### Dice Notation
+        When writing text it'll be scanned for dice notation like +5, 2d6+2 or 1d4. Text like this will be highlighted
+        like a link and can be clicked to generate dice results for the given notation.
+
+        ### DnD Stats
+        Fey-Script comes with a shortcut to calculate DnD attribute modifiers. You'd be able to calculate them just fine
+        using the curly brackets but your document would get quite long. Write $mod and pass a variable name in round brackets
+        to calculate the DnD Modifier.
+
+        |                |               |               |               |               |               |
+        |----------------|---------------|---------------|---------------|---------------|---------------|
         | i[str]         | i[dex]        | i[con]        | i[int]        | i[wis]        | i[cha]        |
         | {{$mod(str)}}  | {{$mod(dex)}} | {{$mod(con)}} | {{$mod(int)}} | {{$mod(wis)}} | {{$mod(cha)}} |
 
-        :::if str > 10
-        This character is quite strong. It's strength is {{str}}
-        :::
+
 
         ## Tabs
-        This new addition allows it to group and filter information on the fly. This will likely be used to
-        replace the current tab management in Fey-Gate to make content easier copy+pasteable
+        Tabs are a great way to group information and hide things that rarely come into play away from the spotlight
+        while still having it accessible.
+
         |-- Tab One ---
         |
-        | [[> fireball ]]
+        | Tabs are great! I want to see this information most of the time!
         |
         |-- Tab Two ---
         |
-        | [[> test.yml ]]
+        | But sometimes this information is required so I just switch over here.
         |
         |---
 
-        [[
-          ## Card with some content
-          That is looking very nice.
-          And can roll a +5 with no problem.
-        ]]
+        ## Imports
+        You can import Fey-Script files into your document a few different ways. Using curly brackets and the ">" sign
+        will import the content of the given file and insert it straight into your document.
+        If you're using square brackets instead, you'll create a card that will display the first headline of the imported
+        file as title, the first image as an image and look for the key "description" in the frontmatter data to display
+        it on the card.
 
-        # Headline
-        And some more text just to make sure... might be a weird issue
+        {{> text }}
+
+        [[> fireball ]]
 
       </fey-viewer>
     </div>
     <script type="module" src="/src/main.js"></script>
     <script>
-      const viewer = document.getElementById('viewer');
-      viewer.resolveImports = resolveImport;
-      viewer.addEventListener('onDiceRoll', (e) => {
-        alert(e.detail.result.output);
-      });
-
-      function resolveImport(path) {
-        const importables = {
-          'doubleImport': `## Double import
-          this little thing will import another one.
-          {{> fireball }}`,
-          'fireball.yml': `
-title: Fireball
-img: fireball.png
-description: |
-  *3rd-level evocation*
-
-  **Casting Time:** 1 action
-
-  **Range:** 150 feet
-
-  **Components:** V, S, M (a tiny ball of bat guano and sulfur)
-
-  **Duration:** Instantaneous
-
-  A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.
-
-  The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried.
-
-  ***At Higher Levels.*** When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
-          `,
-          'fireball': `#### Fireball
-        ![fireball](fireball.png)
-
-        *3rd-level evocation*
-
-        **Casting Time:** 1 action
-
-        **Range:** 150 feet
-
-        **Components:** V, S, M (a tiny ball of bat guano and sulfur)
-
-        **Duration:** Instantaneous
-
-        A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.
-
-        The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried.
-
-        ***At Higher Levels.*** When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
-    `,
-          'test.yml': `
-            title: "This is a test"
-            img: "temple.png?aspectRatio=1/1"
-            description: "Just a small test to check if cards work with yaml"
-          `
-        }
-
-        return new Promise((resolve) => {
-          resolve(importables[path]);
+      import('/src/importables/importables.js').then((module) => {
+        const importables = module.importables;
+        const viewer = document.getElementById('viewer');
+        viewer.resolveImports = resolveImport;
+        viewer.addEventListener('onDiceRoll', (e) => {
+          alert(e.detail.result.output);
         });
-      }
+
+        function resolveImport(path) {
+          return new Promise((resolve) => {
+            resolve(importables[path]);
+          });
+        }
+      });
     </script>
   </body>
 </html>

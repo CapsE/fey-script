@@ -33,7 +33,7 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
     code = await scanForImports(code, resolveImports, 0);
 
     code = code.replaceAll(/:::if ([^\n]+)\n([\s\S]+?)\n:::/gm, (match, condition, inner) => {
-        return `<fey-if expression="${condition}">${inner}</fey-if>`
+        return `\n<fey-if expression="${condition.replaceAll('"', `'`)}">\n${inner}\n</fey-if>\n`
     })
     code = code.replaceAll(/\{\{(.*?)\}\}/g, (match, inner) => {
         return `<fey-eval expression="${inner}"></fey-eval>`;
