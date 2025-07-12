@@ -1,0 +1,194 @@
+# Fey-Script
+Fey-Script is a superset of the well known markdown language created to write
+interactive documents for TTRPGs (Tabletop Roleplaying Games).
+
+Fey-Script will highlight typical dice notation like 2d6+2 and can "roll" those dice for you. 
+Input fields allow you to create custom character sheets either for less supported Systems or your
+homebrew.
+
+Conditional blocks make it possible to write character creation guides where rules and generator merge 
+into one.
+
+Powerful but simple structual elements allow you to display your document in the most efficient way
+possible.
+
+You can join our [Discord](https://discord.gg/4E63pEndsR) to get in contact.
+
+# Syntax
+
+## Markdown
+Use the well known markdown syntax to style your text, add tables and images and much more.
+
+## Front matter
+You can define data at the beginning of your document to be used with it. To do so write YAML code between
+two lines with three dashes. This block needs to be at the very top of your document.
+
+```fey
+---
+info: Use "front matter" to supply initial data to your document
+name: Nira
+str: 10
+dex: 15
+con: 8
+int: 10
+wis: 14
+cha: 12
+---
+```
+
+## Structual Elements
+You can wrap your markdown syntax in different containers to change how they are displayed.
+
+### HTML
+You can write HTML code within Fey-Script. While Fey-Script comes with a bunch of useful tools and shortcuts
+if you know your way around the HTML and CSS languages you can include them in Fey-Script to achieve even more.
+Keep in mind though that Fey-Script within HTML-Elements won't be parsed automatically.
+```fey
+<div style="background-color: darkmagenta; padding: 1rem;">
+  Some text on dark magenta background that can't be __bold__ because Fey-Script and markdown don't work within HTML.
+</div>
+```
+
+### Card
+Cards are small boxes that seperate their content from the rest of the document. They're great to give a preview
+or a small overview or put focus on something important. You can create a card by using double square brackets
+
+```fey
+[[
+  ### Card
+  This is the content of the card. It can be any valid fey-script code.
+]]
+```
+
+### Row
+The row will display contained elements next to each other with a bit of spacing and break automatically
+into the next row if no more space is available.
+
+```fey
+  :::row
+    [[
+      ### First Card
+      This card contains some test text.
+    ]]
+    [[
+      ### Second Card
+      This card contains some test text.
+    ]]
+  :::
+```
+
+### Grid
+Using the grid container you can define columns with relative sizes. In this example a grid of 1-2-1 is used
+which means the center column is twice as wide as the outer ones. You can use as many columns as you like so
+1-1-1-1-1-1-1 would give you seven columns of equal size.
+
+```fey
+:::grid-1-2-1
+<div style="background-color: darkcyan; padding: 1rem">
+
+</div>
+<div style="background-color: darkblue; padding: 1rem">
+
+</div>
+<div style="background-color: darkmagenta; padding: 1rem">
+
+</div>
+:::
+```
+
+## Interactive Elements
+You can use inputs and variables to control the rendering of your document. Using double curly brackets
+you can output any value within the document.
+
+```fey
+{{name}}
+```
+
+### Inputs
+Inputs are defined by writing "i" followed by a variable name in square brackets. They allow you to edit
+variables on the fly and the document will react to the changes. You can provide optional settings to your
+input by writing them in JSON format after a |. Most attributes of HTML input elements are supported as well
+as a "label" attribute to override the label that will be automatically generated. The default type for inputs
+is number.
+
+```fey
+i[name|{"type":"text"}]
+```
+
+### Selects
+Selects work just like inputs but give the user a list of available values to choose from instead.
+
+```fey
+s[className][
+  Warrior
+  Rogue
+  Mage
+]
+```
+
+### Conditional Block
+It's possible to wrap parts of your document in a conditional if block. The wrapped content will only be shown
+when the condition is met. Conditions are written as Javascript.
+
+```fey
+:::if className === "Warrior"
+You choose the Warrior class. You are strong and know how to fight.
+:::
+
+:::if className === "Rogue"
+You choose the Rogue class. You are sneaky and know how to get out of sticky situations.
+:::
+
+:::if className === "Mage"
+You choose the Mage class. You are intelligent and know how to cast magic
+:::
+```
+
+### Dice Notation
+When writing text it'll be scanned for dice notation like +5, 2d6+2 or 1d4. Text like this will be highlighted
+like a link and can be clicked to generate dice results for the given notation.
+
+```fey
+No special code needed. +5, 2d6+2 or 1d4 and others will just work.
+```
+
+### DnD Stats
+Fey-Script comes with a shortcut to calculate DnD attribute modifiers. You'd be able to calculate them just fine
+using the curly brackets but your document would get quite long. Write $mod and pass a variable name in round brackets
+to calculate the DnD Modifier.
+
+```fey
+|                |               |               |               |               |               |
+|----------------|---------------|---------------|---------------|---------------|---------------|
+| i[str]         | i[dex]        | i[con]        | i[int]        | i[wis]        | i[cha]        |
+| {{$mod(str)}}  | {{$mod(dex)}} | {{$mod(con)}} | {{$mod(int)}} | {{$mod(wis)}} | {{$mod(cha)}} |
+```
+
+## Tabs
+Tabs are a great way to group information and hide things that rarely come into play away from the spotlight
+while still having it accessible.
+
+```fey
+|-- Tab One ---
+|
+| Tabs are great! I want to see this information most of the time!
+|
+|-- Tab Two ---
+|
+| But sometimes this information is required so I just switch over here.
+|
+|---
+```
+
+## Imports
+You can import Fey-Script files into your document a few different ways. Using curly brackets and the ">" sign
+will import the content of the given file and insert it straight into your document.
+If you're using square brackets instead, you'll create a card that will display the first headline of the imported
+file as title, the first image as an image and look for the key "description" in the frontmatter data to display
+it on the card.
+
+```fey
+{{> text }}
+
+[[> fireball ]]
+```
