@@ -90,6 +90,10 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
         return `\n<fey-grid class="grid" grid="${cols}">\n${content}\n</fey-grid>\n`;
     })
 
+    code = code.replaceAll(/:::row\n([\s\S]*?)\n:::/g, (match, content) => {
+        return `\n<fey-container class="row">\n${content}\n</fey-container>\n`;
+    })
+
     code = code.replaceAll(/\[\[\>([\s\S]+?)\]\]/g, (match, inner) => {
         return `\n<fey-card class="card" import="${inner.trim()}"></fey-card>\n`
     });

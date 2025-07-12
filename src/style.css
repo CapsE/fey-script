@@ -23,7 +23,7 @@
   box-shadow: #000 2px 2px 12px;
   display: flex;
   flex-direction: column;
-  max-width: 360px;
+  width: 360px;
   padding: 1rem;
   color: white;
   text-decoration: none;
@@ -45,6 +45,11 @@
 
 .grid {
   display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: flex;
   gap: 1rem;
 }
 

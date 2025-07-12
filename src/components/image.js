@@ -14,7 +14,6 @@ export class FeyImage extends FeyElement {
     connectedCallback() {
         let src = this.getAttribute('src');
         let [url, params] = src.split('?');
-        console.log(url, params);
         this.src = url;
 
         const obj = {};
