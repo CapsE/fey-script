@@ -17,7 +17,19 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - run: corepack enable # enables Yarn if it's not installed
+      - run: corepack enable
+      - name: Verify tag matches package.json version
+        run: |
+         TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+         PKG_VERSION=$(jq -r .version package.json)
+         
+         echo "Git tag: $TAG_VERSION"
+         echo "Package.json version: $PKG_VERSION"
+         
+         if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+           echo "❌ Version mismatch: tag is $TAG_VERSION but package.json has $PKG_VERSION"
+           exit 1
+         fi
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn publish --access public
