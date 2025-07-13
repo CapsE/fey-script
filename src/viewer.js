@@ -37,6 +37,7 @@ export class FeyViewer extends HTMLElement {
                 if (this.watchers['*']) {
                     this.watchers['*'].forEach(fn => fn(value));
                 }
+                this.dispatchEvent(new CustomEvent('change', {detail: this.data}));
                 return true;
             }
         });
