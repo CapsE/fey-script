@@ -1,14 +1,17 @@
 {
   "name": "fey-script",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
+  "description": "Parser and runtime for Fey Script - a homebrew scripting language for fantasy content.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
+  "files": [
+    "dist/index.js"
+  ],
   "devDependencies": {
     "vite": "^7.0.0"
   },
@@ -21,5 +24,22 @@
     ".": {
       "import": "./dist/index.js"
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CapsE/fey-script.git"
+  },
+  "keywords": [
+    "scripting",
+    "parser",
+    "fantasy",
+    "markdown",
+    "custom language"
+  ],
+  "author": "Lars Krafft",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CapsE/fey-script/issues"
+  },
+  "homepage": "https://github.com/CapsE/fey-script"
 }
