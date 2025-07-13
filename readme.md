@@ -242,6 +242,31 @@ while still having it accessible.
 |---
 ```
 
+## Images
+You can use images within Fey-Script just like in regular Markdown but there is an additional feature
+to crop your images. Keep in mind that the actual file size doesn't change using this feature and it only
+affects how images are displayed.
+
+```fey
+Regular display of an image
+![image](fireball.png)
+
+The image will be displayed with a width of 300px. It's height will adjust to keep the original aspect ratio.
+![image](fireball.png?width=300px)
+
+The image will be displayed with a height of 300px. It's width will adjust to keep the original aspect ratio.
+![image](fireball.png?height=300px)
+
+The image will be displayed with width of 300px and height of 100px.
+![image](fireball.png?width=300px&height=100px)
+
+The image will be displayed with a ratio of 16:9 cropping parts of the image around the center.
+![image](fireball.png?aspectRatio=16/9)
+
+The image will be display in portrait mode focusing on the top left and cropping the bottom right.
+![image](fireball.png?aspectRatio=2/3&focus=top left)
+```
+
 ## Imports
 You can import Fey-Script files into your document a few different ways. Using curly brackets and the ">" sign
 will import the content of the given file and insert it straight into your document.

@@ -28,7 +28,7 @@ export class FeyImage extends FeyElement {
         this.aspectRatio = obj.aspectRatio || 'auto';
         this.width = obj.width;
         this.height = obj.height;
-        this.focus = obj.focus || 'center';
+        this.focus = obj.focus ? obj.focus.replaceAll('-', ' ') : 'center';
         this.render();
     }
 
