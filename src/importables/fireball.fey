@@ -1,5 +1,8 @@
 ---
-description: A powerful fire spell dealing 8d6 fire damage in a 20ft. radius.
+description: |
+    A powerful fire spell dealing 8d6 fire damage in a 20ft. radius.
+
+    It can easily be written with multiline text.
 ---
 #### Fireball
 ![fireball](fireball.png)

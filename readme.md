@@ -25,7 +25,7 @@ importing it into your bundle and you'll be able to use the fey-viewer tag.
         # Fey-Script code
         All text placed here will be renderered as Fey-Script
     </fey-viewer>
-    <script src="fey-script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fey-script@latest/dist/index.js"></script>
     <script>
         const viewer = document.getElementById('viewer');
         viewer.resolveImports = async (path) => path.fileContent;
