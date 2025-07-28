@@ -98,6 +98,25 @@ cha: 12
 ---
 ```
 
+## Data
+As an alternative to front matter you can use a data block to supply YAML data. If you import files ending in
+.yml their content will automatically be wrapped in a data block.
+```fey
+:::data
+  info:
+    name: Nira
+    age: 22
+    species: Half-Elf
+  attributes:
+    str: 10
+    dex: 16
+    con: 8
+    int: 10
+    wis: 14
+    cha: 12
+:::
+```
+
 ## Structual Elements
 You can wrap your markdown syntax in different containers to change how they are displayed.
 

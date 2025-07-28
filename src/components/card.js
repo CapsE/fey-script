@@ -21,7 +21,6 @@ export class FeyCard extends FeyElement {
         let data = {};
 
         if(this.import.endsWith('.yml')) {
-            console.log(this.content);
             data = yaml.parse(this.content);
         } else {
             const {frontMatterData} = extractFrontmatter(this.content);

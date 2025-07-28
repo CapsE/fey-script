@@ -12,7 +12,6 @@ export class FeyRollable extends FeyElement {
         a.innerText = this.notation;
         a.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log("Rolling with", this.notation);
             this.viewer.rollDice(this.notation);
         });
         this.appendChild(a);

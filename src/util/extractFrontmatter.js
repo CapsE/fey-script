@@ -3,7 +3,6 @@ import {normalizeIndentation} from "./flattenIndentString.js";
 
 export function extractFrontmatter(mdx) {
     mdx = mdx.replaceAll('\r', '\n');
-    console.log(mdx);
     const regex = /^\s*---\n([\s\S]*?)\n\s*---/g
     const match = regex.exec(mdx)
     let frontMatterData = {}

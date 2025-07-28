@@ -9,12 +9,22 @@ async function scanForImports(code, resolveImports, count) {
 
     // Resolve all imports in parallel
     const replacements = await Promise.all(
-        matches.map((match) => resolveImports(match[1].trim()))
+        matches.map((match) => {
+            const path = match[1].trim();
+            return resolveImports(path);
+        })
     );
 
     // Apply replacements
     for (let i = 0; i < matches.length; i++) {
         const [fullMatch] = matches[i];
+        const path = matches[i][1].trim();
+        if(path.endsWith('.yml')) {
+            code = code.replace(fullMatch, replacements[i] ? `:::data
+${replacements[i]}
+                :::` : "");
+            continue;
+        }
         code = code.replace(fullMatch, replacements[i] ? flattenIndentedString(replacements[i]) : "");
     }
 
@@ -33,11 +43,14 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
     code = code.replaceAll('&amp;', '&');
     code = code.replaceAll(/```([\S]+)*\n([\s\S]+?)\n\s*```/gm, (match, type, inner) => {
         codeBlocks.push(normalizeIndentation(inner));
-        console.log(codeBlocks);
         return '```\n\n\n```'
     })
 
     code = await scanForImports(code, resolveImports, 0);
+
+    code = code.replaceAll(/:::data\n([\s\S]+?)\n\s*:::/gm, (match, inner) => {
+        return `\n<fey-data>${encodeURIComponent(inner)}</fey-data>\n`
+    })
 
     code = flattenIndentedString(code);
 
@@ -138,7 +151,6 @@ export async function parseFeyScript(code, resolveImports = async (path) => '') 
     });
 
     code = code.replaceAll(/\`\`\`\n\n\n\`\`\`/gm, (match, condition, inner) => {
-        console.log("replacing");
         return `\`\`\`\n${codeBlocks.shift()}\n\`\`\``;
     });
 

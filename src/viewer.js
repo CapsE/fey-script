@@ -12,6 +12,7 @@ import './components/card.js';
 import './components/grid.js';
 import './components/tab.js';
 import './components/image.js';
+import './components/data.js';
 import {rollDice} from "./util/dice.js";
 import styles from './style.css?inline';
 
@@ -29,7 +30,7 @@ export class FeyViewer extends HTMLElement {
                     : "+" + Math.floor((v - 10) / 2)
         }, {
             set: (target, prop, value) => {
-                if (target[prop] === value) return;
+                if (target[prop] === value) return true;
                 target[prop] = value;
                 if (this.watchers[prop]) {
                     this.watchers[prop].forEach(fn => fn(value));

@@ -1,0 +1,8 @@
+name: Goblin
+attributes:
+  str: 8
+  dex: 12
+  con: 10
+  int: 6
+  wis: 10
+  cha: 8

@@ -1,0 +1,7 @@
+| Item Name         | Rarity     | Type         | Effect                                                                 |
+|-------------------|------------|--------------|------------------------------------------------------------------------|
+| Blade of Shadows  | Rare       | Weapon       | Grants +2 to stealth and deals +1d6 necrotic damage on hit             |
+| Elixir of Ember   | Uncommon   | Consumable   | Heals 4d4 HP and grants fire resistance for 1 hour                     |
+| Cloak of Whispers | Very Rare  | Wondrous Item| Wearer can cast *Invisibility* once per long rest                      |
+| Ring of Binding   | Legendary  | Ring         | Can imprison a creature within 60 ft (DC 18 Wis save) once per day     |
+| Tome of the Moon  | Rare       | Spellbook    | Contains rare lunar spells; increases Wisdom by 1 while attuned        |
