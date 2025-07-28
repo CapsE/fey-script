@@ -1,52 +1,19 @@
-import {extractFrontmatter} from "./extractFrontmatter.js";
 import {flattenIndentedString, normalizeIndentation, oneLineString} from "./flattenIndentString.js";
 
 const maxLoopCount = 100;
-async function scanForImports(code, resolveImports, count) {
-    const matches = [...code.matchAll(/\{\{>(.*?)\}\}/gm)];
-
-    if (matches.length === 0) return code;
-
-    // Resolve all imports in parallel
-    const replacements = await Promise.all(
-        matches.map((match) => {
-            const path = match[1].trim();
-            return resolveImports(path);
-        })
-    );
-
-    // Apply replacements
-    for (let i = 0; i < matches.length; i++) {
-        const [fullMatch] = matches[i];
-        const path = matches[i][1].trim();
-        if(path.endsWith('.yml')) {
-            code = code.replace(fullMatch, replacements[i] ? `:::data
-${replacements[i]}
-                :::` : "");
-            continue;
-        }
-        code = code.replace(fullMatch, replacements[i] ? flattenIndentedString(replacements[i]) : "");
-    }
-
-    // Recurse if needed
-    if (count < maxLoopCount) {
-        return scanForImports(code, resolveImports, count + 1);
-    }
-
-    return `# Import Chain too deep
-Do you have a circular import of multiple files importing each other?`;
-}
-
-export async function parseFeyScript(code, resolveImports = async (path) => '') {
+export async function parseFeyScript(code) {
     const codeBlocks = [];
-    code = code.replaceAll('\r', '\n');
-    code = code.replaceAll('&amp;', '&');
+    // code = code.replaceAll('\r', '\n');
+    // code = code.replaceAll('&amp;', '&');
+
     code = code.replaceAll(/```([\S]+)*\n([\s\S]+?)\n\s*```/gm, (match, type, inner) => {
         codeBlocks.push(normalizeIndentation(inner));
         return '```\n\n\n```'
     })
 
-    code = await scanForImports(code, resolveImports, 0);
+    code = code.replaceAll(/\{\{>(.*?)\}\}/gm, (match, inner) => {
+       return `\n <fey-import-resolver src="${inner.trim()}"></fey-import-resolver>`
+    });
 
     code = code.replaceAll(/:::data\n([\s\S]+?)\n\s*:::/gm, (match, inner) => {
         return `\n<fey-data>${encodeURIComponent(inner)}</fey-data>\n`

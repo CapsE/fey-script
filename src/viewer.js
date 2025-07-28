@@ -13,8 +13,9 @@ import './components/grid.js';
 import './components/tab.js';
 import './components/image.js';
 import './components/data.js';
+import './components/importResolver.js';
 import {rollDice} from "./util/dice.js";
-import styles from './style.css?inline';
+import {feyscriptToHTML} from "./util/feyscriptToHTML.js";
 
 async function defaultImportResolver(path) {
     return `Import ${path}`;
@@ -71,10 +72,7 @@ export class FeyViewer extends HTMLElement {
         this.content = content;
         this.watchers = {};
         const feyScript = await parseFeyScript(this.content, this.resolveImports);
-        this.innerHTML = `<style>${styles}</style>${marked.parse(feyScript).replace(
-            /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi,
-            (_, src) => `<fey-image src="${src}"></fey-image>`
-        )}`;
+        this.innerHTML = feyscriptToHTML(feyScript);
     }
 
     addWatcher(key, fn) {
